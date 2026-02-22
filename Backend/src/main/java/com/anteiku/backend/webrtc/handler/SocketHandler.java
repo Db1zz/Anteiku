@@ -1,7 +1,9 @@
 package com.anteiku.backend.webrtc.handler;
 
+import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.service.VoiceService;
 import com.anteiku.backend.util.QueryUtils;
+import com.nimbusds.jose.util.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -9,7 +11,9 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.util.*;
@@ -17,47 +21,56 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 public class SocketHandler extends TextWebSocketHandler {
-    private final VoiceService voiceService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    HashMap<UUID, List<WebSocketSession>> sessions = new HashMap();
+    HashMap<String, WebSocketSession> sessions = new HashMap();
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message)
         throws InterruptedException, IOException {
-        String query = session.getUri().getQuery();
-        UUID roomId = UUID.fromString(QueryUtils.getQueryParameter(query, "roomId"));
+        String jsonMessage = message.getPayload();
 
-        List<WebSocketSession> room_sessions = sessions.get(roomId);
+        JsonNode root = objectMapper.readTree(jsonMessage);
+        ObjectNode objectNode = (ObjectNode) root;
 
-        for (WebSocketSession room_session : room_sessions) {
-            synchronized (room_session) {
-                if (room_session.isOpen() && !session.getId().equals(room_session.getId())) {
-                    room_session.sendMessage(message);
-                }
-            }
+        String to = objectNode.get("to").toString();
+        objectNode.put("from", session.getId());
+
+        WebSocketSession receiver = sessions.get(to);
+        if (receiver == null) {
+            throw new ResourceNotFoundException("WebRtc Session not found");
         }
+
+        receiver.sendMessage(new TextMessage(root.toString()));
     }
 
+    /* A new-connection[from: A] -> B offer[to: A] -> server[B offer[from: B, to: A]] -> A answer[to: B] -> server[A answer[from: A, to: B]] -> B ok. */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        WebSocketSession wrapped = new ConcurrentWebSocketSessionDecorator(session, 10000, 1024);
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("type", "new-connection");
+        root.put("from", session.getId());
 
-        String query = session.getUri().getQuery();
-        UUID roomId = UUID.fromString(QueryUtils.getQueryParameter(query, "roomId"));
+        String jsonMessage = objectMapper.writeValueAsString(root);
 
-        List<WebSocketSession> room_sessions = sessions.get(roomId);
-        if (room_sessions == null) {
-            room_sessions = new ArrayList();
-        }
-        room_sessions.add(session);
+        TextMessage textMessage = new TextMessage(jsonMessage);
 
-        sessions.put(roomId, room_sessions);
+        sessions.put(session.getId(), session);
+
+        sessions.forEach(((uuid, webSocketSession) -> {
+            if (!session.getId().equals(webSocketSession.getId())) {
+                try {
+                    webSocketSession.sendMessage(textMessage);
+                } catch (IOException e) {
+                    System.out.println("Unable to send a message to a websocket: " + e.getMessage());
+                }
+            }
+        }));
+        System.out.println("Number of users in a room: " + sessions.size());
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws  Exception {
         // TODO remove from DB as well, if the connection counter is === to 1
-        sessions.remove(session);
+        sessions.remove(session.getId());
     }
 }

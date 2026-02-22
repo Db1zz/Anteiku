@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useState} from 'react';
 import { type ReactNode } from 'react';
+import { WebRtcSession } from '../services/webrtc/session';
 
 type CallData = {
-	callerId: string
-	invitedUsers: [string]
+	// callerId: string;
+	// invitedUsers: [string] | null;
+	webRtcSession: WebRtcSession | null;
 };
 
 type CallContextType = {
@@ -21,7 +23,7 @@ export const CallProvider = ({ children }: { children: ReactNode } ) => {
 	const endCall = () => setActiveCall(null);
 
 	return (
-		<CallContext.Provider value={{activeCall, startCall, endCall}}>
+		<CallContext.Provider value={{ activeCall, startCall, endCall }}>
 			{children}
 		</CallContext.Provider>
 	);

@@ -10,6 +10,7 @@ import {
 import { Friend, FriendsTab } from "./FriendsView";
 import { ProfileButton } from "./ProfileButton";
 import { Button } from "./Button";
+import { useCallContext } from "../contexts/CallContext";
 
 interface FriendsListProps {
   friends: Friend[];

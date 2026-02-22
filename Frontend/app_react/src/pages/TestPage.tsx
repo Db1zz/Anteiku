@@ -174,7 +174,7 @@ useEffect(() => {
             const localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             localVideoRef.current!.srcObject = localStream;
             localStream.getTracks().forEach(track => s1.pc.addTrack(track, localStream));
-            
+
             const offer = await s1.pc.createOffer();
             await s1.pc.setLocalDescription(offer);
             console.log("Test: ", s1.roomId)

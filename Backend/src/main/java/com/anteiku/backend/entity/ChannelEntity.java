@@ -25,7 +25,7 @@ public class ChannelEntity {
 
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private ChannelType type;d
+    private ChannelType type;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
