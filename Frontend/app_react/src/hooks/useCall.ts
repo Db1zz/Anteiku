@@ -1,6 +1,7 @@
 import { useAuth } from "../contexts/AuthContext"
 import { useCallContext } from "../contexts/CallContext";
 import { WebRtcSession } from "../services/webrtc/session";
+
 const getHeaders = () => {
 	const headers: any = {
 		"content-type": "application/json"

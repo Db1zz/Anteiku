@@ -36,9 +36,6 @@ export class WebRtcSession {
 			}
 		}).then(() => {
 			this.signalingServerSocket!.addEventListener("message", (message) => this.onMessageCallback(message));
-			// Wait server message with the list of peers...
-			// if there's none, do nothing and just wait to someone to connect? or setup your own env....
-			// Add smth =)
 		});
 	}
 
@@ -61,12 +58,15 @@ export class WebRtcSession {
 				this.handleAnswerEvent(pm.from, pm.sdp);
 				break;
 			}
+			case "ice": {
+				this.handleIceEvent(pm.from, pm.candidate);
+				break;
+			}
 		}
 	};
 
 	private async handleNewConnectionEvent(from: string) {
-		const pc = new RTCPeerConnection;
-		this.peers.set(from, pc);
+		const pc = this.createPeerConnection(from);
 
 		const offer = await pc.createOffer();
 		await pc.setLocalDescription(offer);
@@ -75,17 +75,13 @@ export class WebRtcSession {
 	}
 
 	private async handleOfferEvent(from: string, sdp: RTCSessionDescriptionInit) {
-		const search = this.peers.get(from);
-		if (search === undefined) {
-			throw new Error("TODO2");
-		}
+		const pc = this.createPeerConnection(from);
 
-		const peer: RTCPeerConnection = search;
-		peer.setRemoteDescription(sdp);
-		const answer = await peer.createAnswer();
-		await peer.setLocalDescription(answer);
+		pc.setRemoteDescription(sdp);
+		const answer = await pc.createAnswer();
+		await pc.setLocalDescription(answer);
 
-		const message = { type: "answer", to: from, sdp: peer.localDescription! };
+		const message = { type: "answer", to: from, sdp: pc.localDescription! };
 		this.signalingServerSocket!.send(JSON.stringify(message));
 	}
 
@@ -97,5 +93,32 @@ export class WebRtcSession {
 
 		const peer: RTCPeerConnection = search;
 		peer.setRemoteDescription(sdp);
+	}
+
+	private async handleIceEvent(from: string, candidate: RTCIceCandidateInit) {
+		const search = this.peers.get(from);
+		if (search === undefined) {
+			throw new Error("TODO3");
+		}
+
+		const pc: RTCPeerConnection = search;
+
+		await pc.addIceCandidate(candidate);
+	}
+
+	private createPeerConnection(peerId: string): RTCPeerConnection {
+		const pcConfig: RTCConfiguration = { iceServers: [{ urls: this.stunAddress }] };
+		const pc =  new RTCPeerConnection(pcConfig);
+
+		pc.addEventListener("icecandidate", event => this.onIceCandidateCallback(event, peerId));
+
+		this.peers.set(peerId, pc);
+
+		return pc;
+	}
+
+	private onIceCandidateCallback(event: RTCPeerConnectionIceEvent, to: string) {
+		const message = { type: "ice", to: to, candidate: event.candidate!.toJSON() };
+		this.signalingServerSocket!.send(JSON.stringify(message));
 	}
 }
