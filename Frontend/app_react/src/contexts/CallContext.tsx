@@ -5,7 +5,9 @@ import { WebRtcSession } from '../services/webrtc/session';
 type CallData = {
 	// callerId: string;
 	// invitedUsers: [string] | null;
-	webRtcSession: WebRtcSession | null;
+	roomId: string;
+	signalingServerAddress: string;
+	stunAddress: string;
 };
 
 type CallContextType = {

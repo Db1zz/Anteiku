@@ -13,12 +13,13 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @RequiredArgsConstructor
 public class SocketHandler extends TextWebSocketHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    HashMap<String, WebSocketSession> sessions = new HashMap();
+    ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message)
@@ -35,7 +36,9 @@ public class SocketHandler extends TextWebSocketHandler {
             throw new ResourceNotFoundException("WebRtc Session not found");
         }
 
-        receiver.sendMessage(new TextMessage(root.toString())); // TODO try/catch block
+        synchronized (receiver) {
+            receiver.sendMessage(new TextMessage(root.toString())); // TODO try/catch block
+        }
     }
 
     /* A new-connection[from: A] -> B offer[to: A] -> server[B offer[from: B, to: A]] -> A answer[to: B] -> server[A answer[from: A, to: B]] -> B ok. */
@@ -54,7 +57,9 @@ public class SocketHandler extends TextWebSocketHandler {
         sessions.forEach(((uuid, webSocketSession) -> {
             if (!session.getId().equals(uuid)) {
                 try {
-                    webSocketSession.sendMessage(textMessage);
+                    synchronized (webSocketSession) {
+                        webSocketSession.sendMessage(textMessage);
+                    }
                 } catch (IOException e) {
                     System.out.println("Unable to send a message to a websocket: " + e.getMessage());
                 }
@@ -66,6 +71,8 @@ public class SocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws  Exception {
         // TODO remove from DB as well, if the connection counter is === to 1
-        sessions.remove(session.getId());
+        synchronized (sessions){
+            sessions.remove(session.getId());
+        }
     }
 }

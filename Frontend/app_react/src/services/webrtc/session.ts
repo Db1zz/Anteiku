@@ -1,16 +1,21 @@
 import { RtcSignal } from "./types";
 
+type WebRtcSessionCallbacks = {
+	onLocalStream?: (stream: MediaStream) => void;
+	onRemoteStream?: (peerId: string, stream: MediaStream) => void;
+}
+
 export class WebRtcSession {
 	public roomId: string;
 	public signalingServerSocket: WebSocket | null;
 	public peers: Map<string, RTCPeerConnection>;
-	public localStream: MediaStream | null;
-	public remoteSteams: Map <string, MediaStream>;
+	public localStream: void | MediaStream | null;
 
 	private stunAddress: string;
 	private signalingServerAddress: URL;
+	private callbacks: WebRtcSessionCallbacks;
 
-	constructor(roomId: string, signalingServerAddress: string, stunAddress: string) {
+	constructor(roomId: string, signalingServerAddress: string, stunAddress: string, callbacks: WebRtcSessionCallbacks = {}) {
 		this.roomId = roomId;
 		this.signalingServerSocket = null;
 		this.peers = new Map<string, RTCPeerConnection>();
@@ -18,7 +23,7 @@ export class WebRtcSession {
 		this.signalingServerAddress.searchParams.append("roomId", roomId);
 		this.stunAddress = stunAddress;
 		this.localStream = null;
-		this.remoteSteams = new Map<string, MediaStream>;
+		this.callbacks = callbacks;
 	}
 
 	public destroy() {
@@ -29,17 +34,10 @@ export class WebRtcSession {
 		}
 	}
 
-	public async joinCall() {
-		this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
-		this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-		
-		new Promise<void>((resolve) => {
-			if (this.signalingServerSocket!.readyState === WebSocket.OPEN && this.localStream != null) {
-				resolve();
-			} else {
-				this.signalingServerSocket!.addEventListener("open", () => resolve(), { once: true });
-			}
-		}).then(() => {
+	public async start() {
+		navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((stream) => {
+			this.localStream = stream;
+			this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
 			this.signalingServerSocket!.addEventListener("message", (message) => this.onMessageCallback(message));
 		});
 	}
@@ -99,12 +97,14 @@ export class WebRtcSession {
 	}
 
 	private async handleIceEvent(from: string, candidate: RTCIceCandidateInit) {
-		const search = this.peers.get(from);
-		if (search === undefined) {
-			throw new Error("TODO3");
+		if (candidate == null) {
+			return;
 		}
 
-		const pc: RTCPeerConnection = search;
+		const pc = this.peers.get(from);
+		if (pc === undefined) {
+			throw new Error("TODO3 WTf?");
+		}
 
 		await pc.addIceCandidate(candidate);
 	}
@@ -124,11 +124,15 @@ export class WebRtcSession {
 	}
 
 	private onIceCandidateCallback(event: RTCPeerConnectionIceEvent, to: string) {
-		const message = { type: "ice", to: to, candidate: event.candidate!.toJSON() };
-		this.signalingServerSocket!.send(JSON.stringify(message));
+		if (event.candidate) {
+			const message = { type: "ice", to: to, candidate: event.candidate.toJSON() };
+			this.signalingServerSocket!.send(JSON.stringify(message));
+		}
 	}
 
 	private onTrackCallback(from: string, event: RTCTrackEvent) {
-		this.remoteSteams.set(from, event.streams[0]);
+		if (this.callbacks.onRemoteStream) {
+			this.callbacks.onRemoteStream(from, event.streams[0]);
+		}
 	}
 }
