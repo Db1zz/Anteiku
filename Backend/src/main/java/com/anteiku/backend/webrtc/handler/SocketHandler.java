@@ -41,7 +41,6 @@ public class SocketHandler extends TextWebSocketHandler {
         }
     }
 
-    /* A new-connection[from: A] -> B offer[to: A] -> server[B offer[from: B, to: A]] -> A answer[to: B] -> server[A answer[from: A, to: B]] -> B ok. */
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         ObjectNode root = objectMapper.createObjectNode();

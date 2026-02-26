@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState} from 'react';
 import { type ReactNode } from 'react';
-import { WebRtcSession } from '../services/webrtc/session';
 
 type CallData = {
 	// callerId: string;

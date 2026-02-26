@@ -106,3 +106,12 @@ CREATE TABLE IF NOT EXISTS channel_overrides (
     PRIMARY KEY (channel_id, entity_id),
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS organization_channels (
+    organization_id UUID NOT NULL,
+    channel_id UUID NOT NULL,
+
+    PRIMARY KEY (organization_id, channel_id),
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
+);
