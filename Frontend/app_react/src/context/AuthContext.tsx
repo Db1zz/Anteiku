@@ -104,12 +104,13 @@ export const AuthProvider = ({ children }: Props) => {
 
     if (provider === "credentials" && credentials) {
       try {
-        const response = await axios.post("http://localhost:8080/api/auth/login",
+        const response = await axios.post(
+          "http://localhost:8080/api/auth/login",
           {
-          email: credentials.email,
-          password: credentials.password,
+            email: credentials.email,
+            password: credentials.password,
           },
-          { withCredentials: true }
+          { withCredentials: true },
         );
         saveAuthData(response.data);
         return true;
@@ -124,7 +125,11 @@ export const AuthProvider = ({ children }: Props) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:8080/logout", {}, { withCredentials: true });
+      await axios.post(
+        "http://localhost:8080/logout",
+        {},
+        { withCredentials: true },
+      );
     } catch (error) {
       console.error("error during logout:", error);
     } finally {

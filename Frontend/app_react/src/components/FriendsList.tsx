@@ -1,11 +1,4 @@
-import {
-  Search,
-  Users,
-  MessageCircle,
-  Ban,
-  Check,
-  X,
-} from "lucide-react";
+import { Search, Users, MessageCircle, Ban, Check, X } from "lucide-react";
 import { Friend, FriendsTab } from "./FriendsView";
 import { ProfileButton } from "./ProfileButton";
 import { Button } from "./Button";
