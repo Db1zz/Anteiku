@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import api from "../utils/api"
 
 export interface ChatRoom {
   roomId: string;
@@ -25,25 +26,8 @@ export const useChatRooms = () => {
       setLoading(true);
       setError(null);
 
-      const headers: any = {
-        "Content-Type": "application/json",
-      };
-
-      if (user.id) {
-        headers["X-User-Id"] = user.id;
-      }
-
-      const response = await fetch("http://localhost:8080/api/chat/rooms", {
-        credentials: "include",
-        headers,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch chat rooms");
-      }
-
-      const data = (await response.json()) as ChatRoom[];
-      setChatRooms(data);
+      const response = await api.get("/chat/rooms");
+      setChatRooms(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       setChatRooms([]);
