@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Client } from "@stomp/stompjs";
+import api from "../utils/api";
 
 export interface ChatMessage {
   id: string;
@@ -19,20 +20,9 @@ export const useChat = (roomId: string) => {
 
     const loadHistory = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/chat/rooms/${roomId}/messages`,
-          {
-            credentials: "include",
-          },
-        );
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = (await response.json()) as ChatMessage[];
+        const response = await api.get(`/chat/rooms/${roomId}/messages`);
         if (isActive) {
-          setMessages(data);
+          setMessages(response.data);
         }
       } catch (error) {
         if (isActive) {
