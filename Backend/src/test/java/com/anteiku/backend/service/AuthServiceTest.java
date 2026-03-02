@@ -30,10 +30,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private UserRepository userRepository;
-    @Mock private UserCredentialsRepository userCredentialsRepository;
-    @Mock private UserSessionsService userSessionsService;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private UserCredentialsRepository userCredentialsRepository;
+
+    @Mock
+    private UserSessionsService userSessionsService;
 
     @InjectMocks private AuthService authService;
 

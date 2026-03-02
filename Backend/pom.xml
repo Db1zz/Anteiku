@@ -197,7 +197,6 @@
                             <modelPackage>com.anteiku.backend.model</modelPackage>
                             <generatorName>spring</generatorName>
                             <configOptions>
-                                <serializableModel>true</serializableModel>
                                 <interfaceOnly>true</interfaceOnly>
                                 <useJakartaEe>true</useJakartaEe>
                             </configOptions>

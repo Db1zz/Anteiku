@@ -1,7 +1,7 @@
 services:
   redis:
     image: 'redis:latest'
-    container_name: redis_container
+    container_name: redis-container
     volumes:
       - ./Backend/docker-configs/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]

@@ -24,10 +24,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class FriendsServiceTest {
 
-    @Mock private FriendsRepository friendsRepository;
-    @Mock private UserRepository userRepository;
+    @Mock
+    private FriendsRepository friendsRepository;
+    @Mock
+    private UserRepository userRepository;
 
-    @InjectMocks private FriendsService friendsService;
+    @InjectMocks
+    private FriendsService friendsService;
 
     @Test
     void sendFriendRequest_throws_whenSameIds() {

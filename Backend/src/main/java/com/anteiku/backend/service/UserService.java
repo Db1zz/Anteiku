@@ -6,7 +6,7 @@ import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
-        import com.anteiku.backend.repository.UserCredentialsRepository;
+import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -40,7 +40,7 @@ public class UserService {
         return userMapper.toDtoList(users);
     }
 
-    @Cacheable(value="userPublic", key="#id")
+     @Cacheable(value="userPublic", key="#id")
     public UserPublicDto getUserById(UUID id) {
         UserEntity userEntity = userRepository.findUserById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -48,13 +48,13 @@ public class UserService {
         return userMapper.toDto(userEntity);
     }
 
-    @Cacheable(value="userPublic", key="#email")
+     @Cacheable(value="userPublic", key="#email")
     public UserPublicDto getUserByEmail(String email) {
         UserCredentialsDto userCredentialsDto = getUserCredentialsByEmail(email);
         return userMapper.toDto(userRepository.findUserById(userCredentialsDto.getUserId()).get());
     }
 
-    @CacheEvict(value="user", key="#id")
+     @CacheEvict(value="user", key="#id")
     public void deleteUserById(UUID id) {
         Optional<UserEntity> userEntity = userRepository.findUserById(id);
 
@@ -63,7 +63,7 @@ public class UserService {
         }
     }
 
-    @Cacheable(value="user", key="#result.email()")
+     @Cacheable(value="user", key="#result.email()")
     public UserRegistrationDto registerUser(UserRegistrationDto userRegistrationDto) {
         if (userCredentialsRepository.existsByEmail(userRegistrationDto.getEmail())) {
             throw new EmailIsAlreadyUsedException("Email " + userRegistrationDto.getEmail() + " is already in use");
@@ -99,7 +99,7 @@ public class UserService {
         return userInfoDto;
     }
 
-    @Cacheable(value="userCredentials", key="#userEmail")
+     @Cacheable(value="userCredentials", key="#userEmail")
     public UserCredentialsDto getUserCredentialsByEmail(String userEmail) {
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(userEmail).orElseThrow(
                 () -> new ResourceNotFoundException("User not found")
@@ -108,7 +108,7 @@ public class UserService {
         return userMapper.toCredentialsDto(userCredentialsEntity);
     }
 
-    @Cacheable(value="userCredentials", key="#id")
+     @Cacheable(value="userCredentials", key="#id")
     public UserCredentialsDto getUserCredentialsById(UUID id) {
         return userMapper.toCredentialsDto(userCredentialsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User credentials not found")));
