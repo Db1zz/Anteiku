@@ -3,8 +3,8 @@ package com.anteiku.backend.delegate;
 import com.anteiku.backend.api.AuthApi;
 import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.exception.InvalidCredentialsException;
-import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.exception.UserIsNotAuthorized;
+import com.anteiku.backend.exception.UserSessionNotFound;
 import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserAuthTokensDto;
@@ -90,6 +90,8 @@ public class AuthApiDelegate implements AuthApi {
                     .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                     .body(authTokens);
         } catch(UserIsNotAuthorized e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        } catch (UserSessionNotFound e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }

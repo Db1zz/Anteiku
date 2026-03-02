@@ -18,12 +18,25 @@ export interface Friend {
   role: "USER" | "ADMIN";
 }
 
-export const FriendsView: React.FC = () => {
+interface FriendsViewProps {
+  onOpenChat?: (friend: Friend) => void;
+}
+
+export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { friends, addFriend, acceptFriend, removeFriend, blockUser, unblockUser, refresh } = useFriends();
   const { callToAUser } = useCall();
+
+  const {
+    friends,
+    addFriend,
+    acceptFriend,
+    removeFriend,
+    blockUser,
+    unblockUser,
+    refresh
+  } = useFriends();
 
   const getFiltered = () => {
     let filtered = friends;
@@ -62,7 +75,10 @@ export const FriendsView: React.FC = () => {
     <div className="flex flex-col h-full bg-brand-beige border border-brand-green">
       <FriendsHeader
         activeTab={activeTab}
-        onTabChange={(tab) => { setActiveTab(tab); refresh(); }}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          refresh();
+        }}
         counts={counts}
       />
       <div className="flex-1 overflow-hidden">
@@ -74,6 +90,7 @@ export const FriendsView: React.FC = () => {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             activeTab={activeTab}
+            onMessage={(friend) => onOpenChat?.(friend)}
             onAccept={acceptFriend}
             onRemove={removeFriend}
             onBlock={blockUser}

@@ -5,8 +5,9 @@ import {
   Ban,
   Check,
   X,
-  Phone,
+  Phone
 } from "lucide-react";
+
 import { Friend, FriendsTab } from "./FriendsView";
 import { ProfileButton } from "./ProfileButton";
 import { Button } from "./Button";
@@ -17,6 +18,7 @@ interface FriendsListProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   activeTab: FriendsTab;
+  onMessage: (friend: Friend) => void;
   onAccept: (id: string) => void;
   onRemove: (id: string) => void;
   onBlock: (id: string) => void;
@@ -44,6 +46,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   searchQuery,
   onSearchChange,
   activeTab,
+  onMessage,
   onAccept,
   onRemove,
   onBlock,
@@ -102,7 +105,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                     </Button>
                     <Button
                       color="bg-gray-200"
-                      onClick={() => console.log("Message", friend.id)}
+                      onClick={() => onMessage(friend)}
                       className="!p-2 !rounded-full !border-gray-800 !text-gray-800 hover:!bg-brand-brick hover:!text-brand-beige !shadow-[2px_2px_0px_#000]"
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -116,7 +119,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                         <Ban className="w-4 h-4" />
                       </Button>
                     ) : (
-                        <Button
+                      <Button
                         color="bg-red-500"
                         onClick={() => onBlock(friend.id)}
                         className="!p-2 !rounded-full !border-transparent !text-gray-500 hover:!bg-red-200 !shadow-none hover:!shadow-none hover:translate-x-0 hover:translate-y-0"
