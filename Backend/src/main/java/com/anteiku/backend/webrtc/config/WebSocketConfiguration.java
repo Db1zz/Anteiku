@@ -1,6 +1,5 @@
 package com.anteiku.backend.webrtc.config;
 
-import com.anteiku.backend.service.VoiceService;
 import com.anteiku.backend.webrtc.handler.SocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
