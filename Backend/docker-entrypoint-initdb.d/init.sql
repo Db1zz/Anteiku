@@ -116,8 +116,6 @@ CREATE TABLE IF NOT EXISTS organization_channels (
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
 );
 
-);
-
 CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY,
     room_id VARCHAR NOT NULL,
