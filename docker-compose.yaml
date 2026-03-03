@@ -59,9 +59,6 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
-    networks:
-      - default
-
   logstash:
     image: docker.elastic.co/logstash/logstash:9.3.1
     container_name: anteiku-logstash
@@ -76,9 +73,6 @@ services:
       - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
     depends_on:
       - elasticsearch
-    networks:
-      - default
-
   kibana:
     image: docker.elastic.co/kibana/kibana:9.3.1
     container_name: anteiku-kibana
@@ -92,8 +86,6 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
-    networks:
-      - default
 
 volumes:
   db_data:
