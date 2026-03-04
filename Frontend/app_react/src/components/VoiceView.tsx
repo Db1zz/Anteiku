@@ -5,14 +5,15 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import { Mic, MicOff, Video, VideoOff, Headphones } from "lucide-react";
 import { useCallContext } from "../contexts/CallContext";
 import { useWebRtc } from "../hooks/useWebRtc";
 
-const IconMicOn = () => <span>🎤</span>;
-const IconMicOff = () => <span>🔇</span>;
-const IconCamOn = () => <span>📹</span>;
-const IconCamOff = () => <span>🚫</span>;
-const IconHeadphones = () => <span>🎧</span>;
+const IconMicOn = () => <Mic size={20} />;
+const IconMicOff = () => <MicOff size={20} />;
+const IconCamOn = () => <Video size={20} />;
+const IconCamOff = () => <VideoOff size={20} />;
+const IconHeadphones = () => <Headphones size={20} />;
 
 interface VideoTileProps {
   peerId: string;
@@ -43,7 +44,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
 
   return (
     <div
-      className={`relative aspect-video bg-black rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${
+      className={`relative aspect-video bg- rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${
         isSelected
           ? "border-indigo-500 ring-2 ring-indigo-500"
           : "border-transparent hover:border-indigo-500"
@@ -96,13 +97,13 @@ export const VoiceView: React.FC = () => {
   const resetSelection = useCallback(() => setSelectedPeerId(null), []);
 
   const renderControls = () => (
-    <div className="flex gap-3 bg-black/80 backdrop-blur-sm rounded-full p-2 shadow-xl">
+    <div className="flex items-center gap-3 rounded-lg border border-brand-brick/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green">
       <button
         // onClick={toggleAudio}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
           audioEnabled
-            ? "bg-gray-700 hover:bg-gray-600 text-white"
-            : "bg-red-500 hover:bg-red-600 text-white"
+            ? "hover:bg-brand-green text-white"
+            : "hover:bg-brand-brick text-white"
         }`}
         aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}
       >
@@ -110,17 +111,17 @@ export const VoiceView: React.FC = () => {
       </button>
       <button
         // onClick={toggleVideo}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
           videoEnabled
-            ? "bg-gray-700 hover:bg-gray-600 text-white"
-            : "bg-red-500 hover:bg-red-600 text-white"
+            ? "hover:bg-brand-green text-white"
+            : "hover:bg-brand-brick text-white"
         }`}
         aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
       >
         {videoEnabled ? <IconCamOn /> : <IconCamOff />}
       </button>
       <button
-        className="w-10 h-10 rounded-full bg-gray-700 hover:bg-gray-600 text-white flex items-center justify-center"
+        className="w-10 h-10 rounded-lg bg-brand-brick hover:bg-gray-600 text-white flex items-center justify-center"
         aria-label="Headphones"
       >
         <IconHeadphones />
@@ -193,7 +194,7 @@ export const VoiceView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full h-full min-h-[80vh] bg-[#313338] p-4">
+    <div className="flex flex-col w-full h-full min-h-[80vh] bg-brand-green p-4">
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="flex flex-col w-full h-full">
           {selectedPeerId ? (
