@@ -54,8 +54,8 @@ const VideoTile: React.FC<VideoTileProps> = ({
     <div
       className={`relative aspect-video bg- rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${
         isSelected
-          ? "border-indigo-500 ring-2 ring-indigo-500"
-          : "border-transparent hover:border-indigo-500"
+          ? "border-brand-peach"
+          : "border-transparent hover:border-brand-brick"
       } ${className}`}
       onClick={() => onClick?.(peerId)}
     >
