@@ -69,7 +69,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - .elk/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
     ports:
       - "50000:50000"
     environment:
