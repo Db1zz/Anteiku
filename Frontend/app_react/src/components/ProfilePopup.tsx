@@ -40,7 +40,8 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const { logout, user: authenticatedUser } = useAuth();
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
-  const isExpandedView = canExpand ? isExpanded : true;
+  const isExpandedView = true;
+  const showSettingsPanel = canExpand && isExpanded;
 
   useEffect(() => {
     if (friendshipStatus === "friend") {
@@ -112,127 +113,98 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
         className={`
           fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
           bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
-          duration-300 ease-out flex flex-col
+          duration-300 ease-out flex
           animate-slide-up
-          ${
-            isExpandedView
-              ? "w-[500px] h-[550px] shadow-sharp"
-              : "w-[320px] h-[280px] shadow-sharp-md"
-          }
+          ${showSettingsPanel ? "w-[640px] h-[550px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
         `}
       >
-        <div
-          className={`
-            w-full bg-brand-brick relative transition-all duration-300 shrink-0
-            ${isExpandedView ? "h-[140px]" : "h-[80px]"}
-          `}
-        >
-          <div className="absolute top-2 right-2 flex gap-2">
-            {canExpand && (
+        {showSettingsPanel && (
+          <div className="w-[140px] border-r-2 border-gray-800 bg-brand-green/60 p-4 shrink-0">
+            <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
+              settings
+            </h4>
+          </div>
+        )}
+
+        <div className="flex flex-col h-full flex-1 min-w-0">
+          <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
+            <div className="absolute top-2 right-2 flex gap-2">
+              {canExpand && (
+                <button
+                  onClick={toggleExpand}
+                  className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
+                  title={isExpanded ? "Collapse" : "Expand"}
+                >
+                  {isExpanded ? (
+                    <Minimize2 className="w-4 h-4" />
+                  ) : (
+                    <Expand className="w-4 h-4" />
+                  )}
+                </button>
+              )}
               <button
-                onClick={toggleExpand}
+                onClick={handleClose}
                 className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
-                title={isExpanded ? "Collapse" : "Expand"}
               >
-                {isExpanded ? (
-                  <Minimize2 className="w-4 h-4" />
-                ) : (
-                  <Expand className="w-4 h-4" />
-                )}
+                <X className="w-4 h-4" />
               </button>
-            )}
-            <button
-              onClick={handleClose}
-              className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-        <div className="relative px-6 shrink-0">
-          <div
-            className={`
-              absolute border-4 border-brand-beige bg-gray-300 rounded-full 
-              transition-all duration-300 shadow-sm group
-              ${
-                isExpandedView
-                  ? "-top-16 w-[120px] h-[120px]"
-                  : "-top-10 w-[72px] h-[72px]"
-              }
-            `}
-          >
-            <img
-              src={user.picture}
-              alt={user.name}
-              className="w-full h-full object-cover rounded-full"
-            />
-            <div
-              className={`
-                absolute -bottom-0.5 -right-0.5 rounded-full border-[3px] border-brand-beige
-                ${StatusColors[user.status as keyof typeof StatusColors] || "bg-gray-400"}
-                ${isExpandedView ? "w-8 h-8 -bottom-0.5 -right-0.5" : "w-5 h-5"}
-              `}
-            />
-          </div>
-          {user.role === "ADMIN" && (
-            <div
-              className={`
-                absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white
-                rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)]
-                ${isExpandedView ? "top-4 right-6" : "top-2 right-6"}
-              `}
-            >
-              <Shield className="w-3 h-3" />
-              ADMIN
             </div>
-          )}
-        </div>
-        <div
-          className={`
-            px-6 pb-6 flex flex-col h-full text-left
-            ${isExpandedView ? "pt-20" : "pt-12"}
-          `}
-        >
-          <div className="mb-4 shrink-0">
-            <h3
-              className={`
+          </div>
+          <div className="relative px-6 shrink-0">
+            <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
+              <img
+                src={user.picture}
+                alt={user.name}
+                className="w-full h-full object-cover rounded-full"
+              />
+              <div
+                className={`
+                  absolute -bottom-0.5 -right-0.5 rounded-full border-[3px] border-brand-beige
+                  ${StatusColors[user.status as keyof typeof StatusColors] || "bg-gray-400"}
+                  w-8 h-8 -bottom-0.5 -right-0.5
+                `}
+              />
+            </div>
+            {user.role === "ADMIN" && (
+              <div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
+                <Shield className="w-3 h-3" />
+                ADMIN
+              </div>
+            )}
+          </div>
+          <div className="px-6 pb-6 flex flex-col h-full text-left pt-20">
+            <div className="mb-4 shrink-0">
+              <h3
+                className={`
               font-ananias font-bold text-gray-800 leading-none
-              ${isExpandedView ? "text-3xl" : "text-xl"}
+              text-3xl
             `}
-            >
-              {user.name}
-            </h3>
-            {isExpandedView && (
+              >
+                {user.name}
+              </h3>
               <p className="text-sm font-roboto text-gray-500 mt-1">
                 {user.name.toLowerCase().replace(/\s/g, "")}
               </p>
-            )}
-          </div>
+            </div>
 
-          <div className="h-px bg-gray-800/20 mb-4 shrink-0" />
-          <div className="mb-4 shrink-0">
-            <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
-              <Coffee className="w-4 h-4" />
-              about me
-            </h4>
-            <p
-              className={`
-                text-sm text-gray-800 font-roboto
-                ${isExpandedView ? "" : "line-clamp-2"}
-              `}
-            >
-              {user.about || "This user is too lazy to write a bio."}
-            </p>
-            {isOwnProfile && (
-              <Button
-                onClick={handleLogout}
-                className="mt-5 w-full !px-4 !py-2 text-sm"
-              >
-                logout
-              </Button>
-            )}
-          </div>
-          {isExpandedView && (
+            <div className="h-px bg-gray-800/20 mb-4 shrink-0" />
+            <div className="mb-4 shrink-0">
+              <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
+                <Coffee className="w-4 h-4" />
+                about me
+              </h4>
+              <p className="text-sm text-gray-800 font-roboto">
+                {user.about || "This user is too lazy to write a bio."}
+              </p>
+              {/* {isOwnProfile && (
+								<Button
+									onClick={handleLogout}
+									className="mt-5 w-full !px-4 !py-2 text-sm"
+								>
+									logout
+								</Button>
+							)} */}
+            </div>
             <div className="animate-fade-in flex flex-col h-full">
               <div className="mb-auto">
                 <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
@@ -242,6 +214,14 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                   {formatDate(user.createdAt)}
                 </p>
               </div>
+              {isOwnProfile && (
+                <Button
+                  onClick={handleLogout}
+                  className="mt-5 w-full !px-4 !py-2 text-sm"
+                >
+                  logout
+                </Button>
+              )}
               {!isOwnProfile && (
                 <div className="grid grid-cols-2 gap-3 mt-6 w-full">
                   <Button
@@ -259,7 +239,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>,
