@@ -1,250 +1,235 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react";
+import { X, Coffee, Shield } from "lucide-react";
 import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
 import api from "../utils/api";
 
 interface ProfilePopupProps {
-  user: User;
-  friendshipStatus?: "friend" | "pending" | "blocked";
-  canAcceptPending?: boolean;
-  isOpen: boolean;
-  onClose: () => void;
+	user: User;
+	friendshipStatus?: "friend" | "pending" | "blocked";
+	canAcceptPending?: boolean;
+	isOpen: boolean;
+	onClose: () => void;
 }
 
 const formatDate = (dateString: string) => {
-  if (!dateString) {
-    return "Unknown";
-  }
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(date);
+	if (!dateString) {
+		return "Unknown";
+	}
+	const date = new Date(dateString);
+	return new Intl.DateTimeFormat("en-US", {
+		month: "short",
+		day: "2-digit",
+		year: "numeric",
+	}).format(date);
 };
 
 export const ProfilePopup: React.FC<ProfilePopupProps> = ({
-  user,
-  friendshipStatus,
-  canAcceptPending,
-  isOpen,
-  onClose,
+	user,
+	friendshipStatus,
+	canAcceptPending,
+	isOpen,
+	onClose,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [friendState, setFriendState] = useState<
-    "friend" | "pending" | "not_friend"
-  >("not_friend");
-  const { logout, user: authenticatedUser } = useAuth();
-  const isOwnProfile = authenticatedUser?.id === user.id;
-  const canExpand = isOwnProfile;
-  const isExpandedView = true;
-  const showSettingsPanel = canExpand && isExpanded;
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [friendState, setFriendState] = useState<
+		"friend" | "pending" | "not_friend"
+	>("not_friend");
+	const { logout, user: authenticatedUser } = useAuth();
+	const isOwnProfile = authenticatedUser?.id === user.id;
+	const canExpand = isOwnProfile;
+	const isExpandedView = true;
+	const showSettingsPanel = canExpand && isExpanded;
 
-  useEffect(() => {
-    if (friendshipStatus === "friend") {
-      setFriendState("friend");
-      return;
-    }
-    if (friendshipStatus === "pending") {
-      setFriendState("pending");
-      return;
-    }
-    setFriendState("not_friend");
-  }, [friendshipStatus, user.id]);
+	useEffect(() => {
+		if (friendshipStatus === "friend") {
+			setFriendState("friend");
+			return;
+		}
+		if (friendshipStatus === "pending") {
+			setFriendState("pending");
+			return;
+		}
+		setFriendState("not_friend");
+	}, [friendshipStatus, user.id]);
 
-  if (!isOpen) return null;
+	if (!isOpen) return null;
 
-  const handleClose = () => {
-    setIsExpanded(false);
-    onClose();
-  };
+	const handleClose = () => {
+		setIsExpanded(false);
+		onClose();
+	};
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-  const handleLogout = () => {
-    logout();
-    handleClose();
-  };
+	const toggleSettings = () => {
+		setIsExpanded(!isExpanded);
+	};
+	const handleLogout = () => {
+		logout();
+		handleClose();
+	};
 
-  const handleFriendAction = async () => {
-    try {
-      if (friendState === "pending" && canAcceptPending) {
-        await api.put(`/friends/${user.id}`);
-        setFriendState("friend");
-        return;
-      }
+	const handleFriendAction = async () => {
+		try {
+			if (friendState === "pending" && canAcceptPending) {
+				await api.put(`/friends/${user.id}`);
+				setFriendState("friend");
+				return;
+			}
 
-      if (friendState === "not_friend") {
-        await api.post(`/friends/${user.id}`);
-        setFriendState("pending");
-        return;
-      }
+			if (friendState === "not_friend") {
+				await api.post(`/friends/${user.id}`);
+				setFriendState("pending");
+				return;
+			}
 
-      if (friendState === "friend") {
-        await api.delete(`/friends/${user.id}`);
-        setFriendState("not_friend");
-      }
-    } catch (error) {
-      console.error("failed to update friendship state", error);
-    }
-  };
+			if (friendState === "friend") {
+				await api.delete(`/friends/${user.id}`);
+				setFriendState("not_friend");
+			}
+		} catch (error) {
+			console.error("failed to update friendship state", error);
+		}
+	};
 
-  const friendActionText =
-    friendState === "friend"
-      ? "delete from friends"
-      : friendState === "pending"
-        ? canAcceptPending
-          ? "add friend"
-          : "friend request sent"
-        : "add friend";
+	const friendActionText =
+		friendState === "friend"
+			? "delete from friends"
+			: friendState === "pending"
+				? canAcceptPending
+					? "add friend"
+					: "friend request sent"
+				: "add friend";
 
-  const isFriendActionDisabled = friendState === "pending" && !canAcceptPending;
-  return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={handleClose}
-      />
-      <div
-        className={`
+	const isFriendActionDisabled = friendState === "pending" && !canAcceptPending;
+	return ReactDOM.createPortal(
+		<div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
+			<div
+				className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+				onClick={handleClose}
+			/>
+			<div
+				className={`
           fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
           bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
           duration-300 ease-out flex
           animate-slide-up
           ${showSettingsPanel ? "w-[640px] h-[550px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
         `}
-      >
-        {showSettingsPanel && (
-          <div className="w-[140px] border-r-2 border-gray-800 bg-brand-green/60 p-4 shrink-0">
-            <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
-              settings
-            </h4>
-          </div>
-        )}
+			>
+				{showSettingsPanel && (
+					<div className="w-[140px] border-r-2 border-gray-800 bg-brand-green/60 p-4 shrink-0 flex flex-col">
+						<h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
+							settings
+						</h4>
+						<Button
+							onClick={handleLogout}
+							className="mt-auto w-full !px-3 !py-2 text-sm"
+						>
+							logout
+						</Button>
+					</div>
+				)}
 
-        <div className="flex flex-col h-full flex-1 min-w-0">
-          <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
-            <div className="absolute top-2 right-2 flex gap-2">
-              {canExpand && (
-                <button
-                  onClick={toggleExpand}
-                  className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
-                  title={isExpanded ? "Collapse" : "Expand"}
-                >
-                  {isExpanded ? (
-                    <Minimize2 className="w-4 h-4" />
-                  ) : (
-                    <Expand className="w-4 h-4" />
-                  )}
-                </button>
-              )}
-              <button
-                onClick={handleClose}
-                className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-          <div className="relative px-6 shrink-0">
-            <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
-              <img
-                src={user.picture}
-                alt={user.name}
-                className="w-full h-full object-cover rounded-full"
-              />
-              <div
-                className={`
+				<div className="flex flex-col h-full flex-1 min-w-0">
+					<div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
+						<div className="absolute top-2 right-2 flex gap-2">
+							<button
+								onClick={handleClose}
+								className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
+							>
+								<X className="w-4 h-4" />
+							</button>
+						</div>
+					</div>
+					<div className="relative px-6 shrink-0">
+						<div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
+							<img
+								src={user.picture}
+								alt={user.name}
+								className="w-full h-full object-cover rounded-full"
+							/>
+							<div
+								className={`
                   absolute -bottom-0.5 -right-0.5 rounded-full border-[3px] border-brand-beige
                   ${StatusColors[user.status as keyof typeof StatusColors] || "bg-gray-400"}
                   w-8 h-8 -bottom-0.5 -right-0.5
                 `}
-              />
-            </div>
-            {user.role === "ADMIN" && (
-              <div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
-                <Shield className="w-3 h-3" />
-                ADMIN
-              </div>
-            )}
-          </div>
-          <div className="px-6 pb-6 flex flex-col h-full text-left pt-20">
-            <div className="mb-4 shrink-0">
-              <h3
-                className={`
+							/>
+						</div>
+						{user.role === "ADMIN" && (
+							<div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
+								<Shield className="w-3 h-3" />
+								ADMIN
+							</div>
+						)}
+					</div>
+					<div className="px-6 pb-6 flex flex-col h-full text-left pt-20">
+						<div className="mb-4 shrink-0">
+							<h3
+								className={`
               font-ananias font-bold text-gray-800 leading-none
               text-3xl
             `}
-              >
-                {user.name}
-              </h3>
-              <p className="text-sm font-roboto text-gray-500 mt-1">
-                {user.name.toLowerCase().replace(/\s/g, "")}
-              </p>
-            </div>
+							>
+								{user.name}
+							</h3>
+							<p className="text-sm font-roboto text-gray-500 mt-1">
+								{user.name.toLowerCase().replace(/\s/g, "")}
+							</p>
+						</div>
 
-            <div className="h-px bg-gray-800/20 mb-4 shrink-0" />
-            <div className="mb-4 shrink-0">
-              <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
-                <Coffee className="w-4 h-4" />
-                about me
-              </h4>
-              <p className="text-sm text-gray-800 font-roboto">
-                {user.about || "This user is too lazy to write a bio."}
-              </p>
-              {/* {isOwnProfile && (
+						<div className="h-px bg-gray-800/20 mb-4 shrink-0" />
+						<div className="mb-4 shrink-0">
+							<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
+								<Coffee className="w-4 h-4" />
+								about me
+							</h4>
+							<p className="text-sm text-gray-800 font-roboto">
+								{user.about || "This user is too lazy to write a bio."}
+							</p>
+						</div>
+						<div className="animate-fade-in flex flex-col h-full">
+							<div className="mb-auto">
+								<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
+									member since
+								</h4>
+								<p className="text-sm font-mono text-gray-800">
+									{formatDate(user.createdAt)}
+								</p>
+							</div>
+							{isOwnProfile && (
 								<Button
-									onClick={handleLogout}
+									onClick={toggleSettings}
 									className="mt-5 w-full !px-4 !py-2 text-sm"
 								>
-									logout
+									edit profile
 								</Button>
-							)} */}
-            </div>
-            <div className="animate-fade-in flex flex-col h-full">
-              <div className="mb-auto">
-                <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
-                  member since
-                </h4>
-                <p className="text-sm font-mono text-gray-800">
-                  {formatDate(user.createdAt)}
-                </p>
-              </div>
-              {isOwnProfile && (
-                <Button
-                  onClick={handleLogout}
-                  className="mt-5 w-full !px-4 !py-2 text-sm"
-                >
-                  logout
-                </Button>
-              )}
-              {!isOwnProfile && (
-                <div className="grid grid-cols-2 gap-3 mt-6 w-full">
-                  <Button
-                    text={friendActionText}
-                    onClick={handleFriendAction}
-                    disabled={isFriendActionDisabled}
-                    color="bg-transparent"
-                    className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
-                  />
-                  <Button
-                    text="Message"
-                    onClick={() => console.log("Message clicked")}
-                    className="w-full min-w-0 !px-3 !py-2 text-sm"
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
+							)}
+							{!isOwnProfile && (
+								<div className="grid grid-cols-2 gap-3 mt-6 w-full">
+									<Button
+										text={friendActionText}
+										onClick={handleFriendAction}
+										disabled={isFriendActionDisabled}
+										color="bg-transparent"
+										className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
+									/>
+									<Button
+										text="Message"
+										onClick={() => console.log("Message clicked")}
+										className="w-full min-w-0 !px-3 !py-2 text-sm"
+									/>
+								</div>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>,
+		document.body,
+	);
 };
 
 export default ProfilePopup;
