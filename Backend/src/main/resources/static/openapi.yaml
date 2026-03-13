@@ -102,6 +102,36 @@ paths:
         401:
           $ref: '#/components/responses/UnauthorizedError'
 
+  /users/me/picture:
+    post:
+      summary: "Upload my profile picture"
+      operationId: uploadMyPicture
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: "Returns uploaded picture URL"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        400:
+          description: "Invalid picture upload data"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
   /users/check-email:
     get:
       summary: "Check if email is available"

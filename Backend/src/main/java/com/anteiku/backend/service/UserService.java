@@ -9,14 +9,19 @@ import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +33,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
     private final UserMapper userMapper;
+    private final Cloudinary cloudinary;
 
     public List<UserPublicDto> getUsersByUsername(String username) {
         List<UserEntity> users = userRepository.findUserByUsername(username);
@@ -133,6 +139,39 @@ public class UserService {
         userRepository.save(userEntity);
 
         return buildUserInfoDto(userMapper.toDto(userEntity), userCredentialsEntity.getEmail());
+    }
+
+    @SuppressWarnings("unchecked")
+    public String uploadProfilePicture(MultipartFile file) throws AuthenticationException, IOException {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Picture file cannot be empty");
+        }
+
+        String contentType = file.getContentType() == null ? "" : file.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+
+        if (file.getSize() > 15L * 1024 * 1024) {
+            throw new IllegalArgumentException("Image is too large. Maximum allowed size is 15 MB");
+        }
+
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "anteiku/profile-pictures",
+                        "public_id", userId + "-" + UUID.randomUUID(),
+                        "overwrite", true,
+                        "resource_type", "image"
+                )
+        );
+
+        return (String) uploadResult.get("secure_url");
     }
 
     private UserInfoDto buildUserInfoDto(UserPublicDto userPublicDto, String email) {
