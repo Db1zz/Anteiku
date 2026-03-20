@@ -217,13 +217,14 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           {!isEditingProfile && (
             <>
               <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
-                <div className="absolute top-2 right-2 flex gap-2">
-                  <button
+                <div className="absolute top-2 right-3 flex gap-2">
+                  <Button
                     onClick={handleClose}
-                    className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
+                    color="bg-brand-beige"
+                    className="!p-1.5 !min-w-0 border-2 text-gray-800 hover:bg-brand-brick hover:text-brand-beige"
                   >
                     <X className="w-4 h-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="relative px-6 shrink-0">

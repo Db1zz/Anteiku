@@ -110,7 +110,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="mb-1 block font-ananias text-xs font-bold uppercase text-gray-500">
-            name
+            username
           </label>
           <input
             className={inputClassName}
