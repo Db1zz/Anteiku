@@ -166,9 +166,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
       setIsExpanded(false);
       setActiveSettingsSection(null);
     } catch (error: any) {
-      setSaveError(
-        error?.response?.data?.error || "Failed to save profile changes",
-      );
+      setSaveError(error?.response?.data?.error || t("profileEdit.saveError"));
     } finally {
       setIsSavingProfile(false);
     }

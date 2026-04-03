@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 import { useChat } from "../hooks/useChat";
 
@@ -15,6 +16,7 @@ const Chat: React.FC<ChatProps> = ({
   roomId,
   onSendMessage,
 }) => {
+  const { t } = useTranslation();
   const { messages: wsMessages, sendMessage, connected } = useChat(roomId);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -59,7 +61,7 @@ const Chat: React.FC<ChatProps> = ({
         <p
           className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
         >
-          {connected ? "online" : "connecting..."}
+          {connected ? t("chat.online") : t("chat.connecting")}
         </p>
       </div>
 
@@ -103,7 +105,7 @@ const Chat: React.FC<ChatProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="type a message..."
+            placeholder={t("chat.inputPlaceholder")}
             className=" bg-brand-beige flex-1 p-3 border border-brand-peach rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick resize-none max-h-24"
             rows={1}
           />
@@ -111,7 +113,7 @@ const Chat: React.FC<ChatProps> = ({
             onClick={handleSendMessage}
             className="mb-1.5 bg-brand-peach text-brand-brick"
           >
-            send
+            {t("chat.send")}
           </Button>
         </div>
       </div>
