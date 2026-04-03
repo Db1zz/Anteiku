@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { X, Coffee, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
 import { ProfileEditForm } from "./ProfileEditForm";
-import { LanguageEditForm, LanguageOption } from "./LanguageEditForm";
+import {
+  LanguageEditForm,
+  LanguageOption,
+  normalizeLanguageOption,
+} from "./LanguageEditForm";
 import SettingsButton from "./SettingsButton";
 import api from "../utils/api";
 
@@ -17,12 +22,16 @@ interface ProfilePopupProps {
   onClose: () => void;
 }
 
-const formatDate = (dateString: string) => {
+const formatDate = (
+  dateString: string,
+  locale: string,
+  fallbackText: string,
+) => {
   if (!dateString) {
-    return "Unknown";
+    return fallbackText;
   }
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat(locale, {
     month: "short",
     day: "2-digit",
     year: "numeric",
@@ -36,6 +45,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState<
     "profile" | "language" | null
@@ -43,7 +53,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(
-    (localStorage.getItem("preferredLanguage") as LanguageOption) || "english",
+    normalizeLanguageOption(localStorage.getItem("preferredLanguage")),
   );
   const [friendState, setFriendState] = useState<
     "friend" | "pending" | "not_friend"
@@ -115,12 +125,12 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 
   const friendActionText =
     friendState === "friend"
-      ? "delete from friends"
+      ? t("profile.friend.delete")
       : friendState === "pending"
         ? canAcceptPending
-          ? "add friend"
-          : "friend request sent"
-        : "add friend";
+          ? t("profile.friend.add")
+          : t("profile.friend.requestSent")
+        : t("profile.friend.add");
 
   const isFriendActionDisabled = friendState === "pending" && !canAcceptPending;
 
@@ -200,27 +210,27 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
         {showSettingsPanel && (
           <div className="w-[240px] border-r-2 border-gray-800 bg-brand-green/60 p-5 shrink-0 flex flex-col">
             <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
-              settings
+              {t("settings.title")}
             </h4>
             <SettingsButton
               onClick={() => setActiveSettingsSection("profile")}
-              text="my profile"
+              text={t("settings.myProfile")}
             />
             {/* TODO: create voice and video editform for the settings. later */}
             <SettingsButton
               onClick={() => setActiveSettingsSection("profile")}
-              text="voice and video"
+              text={t("settings.voiceAndVideo")}
             />
             <SettingsButton
               onClick={() => setActiveSettingsSection("language")}
-              text="language"
+              text={t("settings.language")}
             />
 
             <Button
               onClick={handleLogout}
               className="mt-auto mb-3 w-full !px-3 !py-2 text-sm"
             >
-              logout
+              {t("common.logout")}
             </Button>
           </div>
         )}
@@ -257,7 +267,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                 {user.role === "ADMIN" && (
                   <div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
                     <Shield className="w-3 h-3" />
-                    ADMIN
+                    {t("common.admin")}
                   </div>
                 )}
               </div>
@@ -327,19 +337,23 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                 <div className="mb-4 shrink-0">
                   <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
                     <Coffee className="w-4 h-4" />
-                    about me
+                    {t("profile.aboutMe")}
                   </h4>
                   <p className="text-sm text-gray-800 font-roboto">
-                    {user.about || "This user is too lazy to write a bio."}
+                    {user.about || t("profile.defaultBio")}
                   </p>
                 </div>
                 <div className="animate-fade-in flex flex-col h-full">
                   <div className="mb-auto">
                     <h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
-                      member since
+                      {t("profile.memberSince")}
                     </h4>
                     <p className="text-sm font-mono text-gray-800">
-                      {formatDate(user.createdAt)}
+                      {formatDate(
+                        user.createdAt,
+                        i18n.resolvedLanguage || "en",
+                        t("common.unknown"),
+                      )}
                     </p>
                   </div>
                   {isOwnProfile && (
@@ -347,7 +361,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                       onClick={toggleSettings}
                       className="mt-5 w-full !px-4 !py-2 text-sm"
                     >
-                      edit profile
+                      {t("profile.editProfile")}
                     </Button>
                   )}
                   {!isOwnProfile && (
@@ -360,7 +374,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                         className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
                       />
                       <Button
-                        text="Message"
+                        text={t("common.message")}
                         onClick={() => console.log("Message clicked")}
                         className="w-full min-w-0 !px-3 !py-2 text-sm"
                       />

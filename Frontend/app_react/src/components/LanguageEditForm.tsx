@@ -1,7 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 
-export type LanguageOption = "english" | "русский" | "deutsch";
+export type LanguageOption = "en" | "ru" | "de";
+
+export const normalizeLanguageOption = (
+  value: string | null | undefined,
+): LanguageOption => {
+  if (value === "ru" || value === "русский") {
+    return "ru";
+  }
+  if (value === "de" || value === "deutsch") {
+    return "de";
+  }
+  return "en";
+};
 
 interface LanguageEditFormProps {
   initialLanguage: LanguageOption;
@@ -15,6 +28,7 @@ export const LanguageEditForm = ({
   initialLanguage,
   onSaved,
 }: LanguageEditFormProps) => {
+  const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] =
     useState<LanguageOption>(initialLanguage);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,9 +45,10 @@ export const LanguageEditForm = ({
 
     try {
       localStorage.setItem("preferredLanguage", selectedLanguage);
+      await i18n.changeLanguage(selectedLanguage);
       onSaved?.(selectedLanguage);
     } catch (_error: any) {
-      setErrorMessage("Failed to save language");
+      setErrorMessage(t("settings.languageForm.saveError"));
     } finally {
       setIsSaving(false);
     }
@@ -47,10 +62,10 @@ export const LanguageEditForm = ({
     >
       <div>
         <h4 className="mb-2 font-ananias text-sm font-bold uppercase text-gray-500">
-          language
+          {t("settings.languageForm.title")}
         </h4>
         <label className="mb-1 block font-ananias text-xs font-bold uppercase text-gray-500">
-          select language
+          {t("settings.languageForm.select")}
         </label>
         <select
           className={selectClassName}
@@ -59,9 +74,9 @@ export const LanguageEditForm = ({
             setSelectedLanguage(event.target.value as LanguageOption)
           }
         >
-          <option value="english">english</option>
-          <option value="русский">русский</option>
-          <option value="deutsch">deutsch</option>
+          <option value="en">{t("settings.languageForm.options.en")}</option>
+          <option value="ru">{t("settings.languageForm.options.ru")}</option>
+          <option value="de">{t("settings.languageForm.options.de")}</option>
         </select>
       </div>
 
@@ -76,7 +91,7 @@ export const LanguageEditForm = ({
         disabled={isSaving}
         className="mt-auto mb-2 w-full !px-3 !py-2 text-sm"
       >
-        {isSaving ? "saving..." : "save"}
+        {isSaving ? t("common.saving") : t("common.save")}
       </Button>
     </form>
   );
