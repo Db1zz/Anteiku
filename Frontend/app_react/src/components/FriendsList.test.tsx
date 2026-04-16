@@ -79,7 +79,11 @@ describe("FriendsList Component", () => {
   it("renders default action buttons for 'online' or 'all' tabs and fires callbacks", async () => {
     const user = userEvent.setup();
     render(
-      <FriendsList {...defaultProps} friends={[mockFriend]} activeTab="online" />
+      <FriendsList
+        {...defaultProps}
+        friends={[mockFriend]}
+        activeTab="online"
+      />,
     );
 
     expect(screen.getByText("Touka")).toBeInTheDocument();
@@ -99,10 +103,18 @@ describe("FriendsList Component", () => {
 
   it("renders Accept and Remove buttons for 'pending' tab if canAcceptPending is true", async () => {
     const user = userEvent.setup();
-    const pendingFriend = { ...mockFriend, isFriend: "pending" as const, canAcceptPending: true };
+    const pendingFriend = {
+      ...mockFriend,
+      isFriend: "pending" as const,
+      canAcceptPending: true,
+    };
 
     render(
-      <FriendsList {...defaultProps} friends={[pendingFriend]} activeTab="pending" />
+      <FriendsList
+        {...defaultProps}
+        friends={[pendingFriend]}
+        activeTab="pending"
+      />,
     );
 
     const acceptButton = screen.getByRole("button", { name: /CheckIcon/i });
@@ -116,14 +128,24 @@ describe("FriendsList Component", () => {
   });
 
   it("hides the Accept button if canAcceptPending is false", () => {
-    const pendingFriend = { ...mockFriend, isFriend: "pending" as const, canAcceptPending: false };
+    const pendingFriend = {
+      ...mockFriend,
+      isFriend: "pending" as const,
+      canAcceptPending: false,
+    };
 
     render(
-      <FriendsList {...defaultProps} friends={[pendingFriend]} activeTab="pending" />
+      <FriendsList
+        {...defaultProps}
+        friends={[pendingFriend]}
+        activeTab="pending"
+      />,
     );
 
-    expect(screen.queryByRole("button", { name: /CheckIcon/i })).not.toBeInTheDocument();
-    
+    expect(
+      screen.queryByRole("button", { name: /CheckIcon/i }),
+    ).not.toBeInTheDocument();
+
     expect(screen.getByRole("button", { name: /XIcon/i })).toBeInTheDocument();
   });
 
@@ -132,7 +154,11 @@ describe("FriendsList Component", () => {
     const blockedFriend = { ...mockFriend, isFriend: "blocked" as const };
 
     render(
-      <FriendsList {...defaultProps} friends={[blockedFriend]} activeTab="blocked" />
+      <FriendsList
+        {...defaultProps}
+        friends={[blockedFriend]}
+        activeTab="blocked"
+      />,
     );
 
     const unblockButton = screen.getByRole("button", { name: /BanIcon/i });

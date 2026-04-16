@@ -5,14 +5,12 @@ import "@testing-library/jest-dom";
 import { Button } from "./Button";
 
 describe("Button Component", () => {
-
   it("renders the button with provided text", () => {
     render(<Button text="Click Me" />);
 
     const buttonElement = screen.getByRole("button", { name: /click me/i });
     expect(buttonElement).toBeInTheDocument();
   });
-
 
   it("renders children when text prop is not provided", () => {
     render(
@@ -23,7 +21,6 @@ describe("Button Component", () => {
     const buttonElement = screen.getByRole("button", { name: /icon send/i });
     expect(buttonElement).toBeInTheDocument();
   });
-
 
   it("fires the onClick callback when clicked", async () => {
     const handleClick = jest.fn();

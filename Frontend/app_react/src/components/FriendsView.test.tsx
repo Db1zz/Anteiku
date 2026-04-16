@@ -45,9 +45,9 @@ jest.mock("./FriendsList", () => ({
   FriendsList: ({ friends, onSearchChange }: any) => (
     <div data-testid="mock-friends-list">
       <span data-testid="friend-count">{friends.length}</span>
-      <input 
-        data-testid="search-input" 
-        onChange={(e) => onSearchChange(e.target.value)} 
+      <input
+        data-testid="search-input"
+        onChange={(e) => onSearchChange(e.target.value)}
       />
     </div>
   ),
@@ -75,7 +75,7 @@ describe("FriendsView Component", () => {
     render(<FriendsView />);
 
     const counts = JSON.parse(screen.getByTestId("counts").textContent || "{}");
-    
+
     expect(counts.online).toBe(1);
     expect(counts.all).toBe(2);
     expect(counts.pending).toBe(1);
@@ -86,11 +86,13 @@ describe("FriendsView Component", () => {
     const user = userEvent.setup();
     render(<FriendsView />);
 
-    const switchToAllButton = screen.getByRole("button", { name: "Switch to All" });
+    const switchToAllButton = screen.getByRole("button", {
+      name: "Switch to All",
+    });
     await user.click(switchToAllButton);
 
     expect(screen.getByTestId("active-tab")).toHaveTextContent("all");
-    
+
     expect(mockRefresh).toHaveBeenCalledTimes(1);
 
     expect(screen.getByTestId("friend-count")).toHaveTextContent("2");
@@ -100,11 +102,13 @@ describe("FriendsView Component", () => {
     const user = userEvent.setup();
     render(<FriendsView />);
 
-    const switchToAddButton = screen.getByRole("button", { name: "Switch to Add" });
+    const switchToAddButton = screen.getByRole("button", {
+      name: "Switch to Add",
+    });
     await user.click(switchToAddButton);
 
     expect(screen.queryByTestId("mock-friends-list")).not.toBeInTheDocument();
-    
+
     expect(screen.getByTestId("mock-add-friend-view")).toBeInTheDocument();
   });
 

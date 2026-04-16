@@ -20,7 +20,9 @@ describe("AddFriendView Component", () => {
     render(<AddFriendView onAddFriend={mockOnAddFriend} />);
 
     expect(screen.getByPlaceholderText(/enter a name/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /send request/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /send request/i }),
+    ).toBeInTheDocument();
   });
 
   it("does not call onAddFriend if the input is empty", async () => {
@@ -28,7 +30,7 @@ describe("AddFriendView Component", () => {
     render(<AddFriendView onAddFriend={mockOnAddFriend} />);
 
     const button = screen.getByRole("button", { name: /send request/i });
-    
+
     await user.click(button);
 
     expect(mockOnAddFriend).not.toHaveBeenCalled();
@@ -48,7 +50,9 @@ describe("AddFriendView Component", () => {
 
     expect(mockOnAddFriend).toHaveBeenCalledWith("kaneki");
 
-    const errorMessage = await screen.findByText(/There are no users with such name/i);
+    const errorMessage = await screen.findByText(
+      /There are no users with such name/i,
+    );
     expect(errorMessage).toBeInTheDocument();
   });
 
@@ -64,14 +68,18 @@ describe("AddFriendView Component", () => {
     await user.type(input, "touka");
     await user.click(button);
 
-    const successMessage = await screen.findByText(/Friend request successfuly sent/i);
+    const successMessage = await screen.findByText(
+      /Friend request successfuly sent/i,
+    );
     expect(successMessage).toBeInTheDocument();
 
     act(() => {
       jest.advanceTimersByTime(3000);
     });
 
-    expect(screen.queryByText(/Friend request successfuly sent/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Friend request successfuly sent/i),
+    ).not.toBeInTheDocument();
 
     expect(input).toHaveValue("");
   });
