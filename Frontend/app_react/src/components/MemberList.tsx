@@ -36,11 +36,15 @@ export const MemberList: React.FC<MemberListProps> = ({ members }) => {
           </h3>
           <div className="space-y-1">
             {groups[group].map((m) => (
-              <ProfileButton 
-                key={m.id} 
-                user={{ ...m, picture: "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg" }}
-                variant="v2" 
-                className="w-full !px-2 !py-1.5" 
+              <ProfileButton
+                key={m.id}
+                user={{
+                  ...m,
+                  picture:
+                    "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg",
+                }}
+                variant="v2"
+                className="w-full !px-2 !py-1.5"
               />
             ))}
           </div>
