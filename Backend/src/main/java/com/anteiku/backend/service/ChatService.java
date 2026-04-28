@@ -77,7 +77,7 @@ public class ChatService {
         return chatRooms;
     }
     
-    private UUID extractOtherUserId(String roomId, UUID currentUserId) {
+    public UUID extractOtherUserId(String roomId, UUID currentUserId) {
         if (!roomId.startsWith("dm-")) return null;
         
         String withoutPrefix = roomId.substring(3);

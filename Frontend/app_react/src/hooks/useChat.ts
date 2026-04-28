@@ -21,6 +21,7 @@ export const useChat = (roomId: string) => {
     const loadHistory = async () => {
       try {
         const response = await api.get(`/chat/rooms/${roomId}/messages`);
+        console.log("LOG: ", response);
         if (isActive) {
           setMessages(response.data);
         }

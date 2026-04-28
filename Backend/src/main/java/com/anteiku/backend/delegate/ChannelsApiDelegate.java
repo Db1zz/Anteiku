@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ChannelsApiDelegate implements ChannelsApi {
-    private ChannelService channelService;
+    private final ChannelService channelService;
 
     @Override
     public ResponseEntity<CreateChannelResponseDto> createChannel(CreateChannelDto createChannelDto) {

@@ -1,4 +1,3 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -8,6 +7,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ShowInfo from "./pages/ShowInfo";
 import TestFriendsView from "./pages/TestFriendsView";
 import SignupPage from "./pages/SignupPage";
+import { NotificationProvider } from "./contexts/NotificationContext";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -15,13 +15,15 @@ const root = ReactDOM.createRoot(
 root.render(
   <AuthProvider>
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />}></Route>
-        <Route path="/login" element={<LoginPage />}></Route>
-        <Route path="/info" element={<ShowInfo />}></Route>
-        <Route path="/testGrisha" element={<TestFriendsView />}></Route>
-        <Route path="/signup" element={<SignupPage />}></Route>
-      </Routes>
+        <NotificationProvider notifyServerAddr="ws://localhost:6969">
+        <Routes>
+            <Route path="/" element={<HomePage />}></Route>
+            <Route path="/login" element={<LoginPage />}></Route>
+            <Route path="/info" element={<ShowInfo />}></Route>
+            <Route path="/testGrisha" element={<TestFriendsView />}></Route>
+            <Route path="/signup" element={<SignupPage />}></Route>
+          </Routes>
+        </NotificationProvider>
     </Router>
   </AuthProvider>,
 );

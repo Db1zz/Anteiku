@@ -8,6 +8,8 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - anteiku-network
   backend:
     image: eclipse-temurin:25-jdk-alpine
     platform: linux/amd64
@@ -29,6 +31,8 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     command: ./mvnw clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+    networks:
+      - anteiku-network
   frontend:
     build: 
       context: ./Frontend/app_react
@@ -46,6 +50,12 @@ services:
       - REACT_APP_STUN_SERVER=${REACT_APP_STUN_SERVER}
       - REACT_APP_SIGNALING_SERVER=${REACT_APP_SIGNALING_SERVER}
     stdin_open: true
+    networks:
+      - anteiku-network
 
 volumes:
   db_data:
+
+networks:
+  anteiku-network:
+    name: anteiku-network
