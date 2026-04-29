@@ -1,6 +1,7 @@
 import React from "react";
 import bgLSideBar from "../../img/bg_l_sidebar.png";
 import { Contact, MessageSquare } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useChatRooms } from "../../hooks/useChatRooms";
 
 interface LeftBarProps {
@@ -12,6 +13,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
   onFriendsClick,
   onChatRoomClick,
 }) => {
+  const { t } = useTranslation();
   const { chatRooms, loading, error } = useChatRooms();
 
   return (
@@ -30,19 +32,21 @@ export const LeftBar: React.FC<LeftBarProps> = ({
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-peach/60">
             <Contact size={18} className="text-brand-green" />
           </span>
-          <span className="text-left">friends list</span>
+          <span className="text-left">{t("friends.friendsList")}</span>
         </button>
 
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center gap-2 mb-3 px-1">
             <MessageSquare size={16} className="text-brand-green" />
-            <h3 className="text-brand-green font-semibold text-sm">chats</h3>
+            <h3 className="text-brand-green font-semibold text-sm">
+              {t("friends.chats")}
+            </h3>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-brand-green/30 scrollbar-track-transparent">
             {loading ? (
               <div className="text-brand-green/70 text-sm text-center py-4">
-                loading chats...
+                {t("friends.loadingChats")}
               </div>
             ) : error ? (
               <div className="text-brand-green/70 text-sm text-center py-4">
@@ -50,7 +54,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
               </div>
             ) : chatRooms.length === 0 ? (
               <div className="text-brand-green/70 text-sm text-center py-4">
-                no chats yet
+                {t("friends.noChats")}
               </div>
             ) : (
               chatRooms.map((room) => (

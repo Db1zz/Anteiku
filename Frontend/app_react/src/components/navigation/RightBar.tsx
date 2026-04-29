@@ -1,7 +1,9 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import bgSideBar from "../../img/bg_sidebar.png";
 
 export const RightBar: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="h-full rounded-r-lg p-4 border-brand-green relative overflow-hidden">
       <div
@@ -10,7 +12,7 @@ export const RightBar: React.FC = () => {
       />
       <div className="absolute inset-0 bg-brand-green opacity-90" />
       <div className="relative z-10 text-gray-800 font-semibold mb-4">
-        some content
+        {t("rightBar.placeholder")}
       </div>
     </div>
   );

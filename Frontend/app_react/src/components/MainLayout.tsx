@@ -11,12 +11,14 @@ import RightBar from "./navigation/RightBar";
 import { VoiceView } from "./VoiceView";
 import { useCallContext } from "../contexts/CallContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const { t } = useTranslation();
   const [activeView, setActiveView] = useState<"friends" | "chat" | "voice">(
     "friends",
   );
@@ -112,11 +114,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <VoiceView />
               ) : !user ? (
                 <div className="flex h-full items-center justify-center text-brand-beige">
-                  please log in to use chat
+                  {t("home.loginToChat")}
                 </div>
               ) : !chatRoomId ? (
                 <div className="flex h-full items-center justify-center text-brand-beige">
-                  select a friend to start a chat
+                  {t("home.selectFriendToChat")}
                 </div>
               ) : (
                 <Chat
