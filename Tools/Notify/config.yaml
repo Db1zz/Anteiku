@@ -3,5 +3,5 @@ consumer:
   brokers: "kafka:29092"
   user_notifications_database_addr: "cassandra:9042"
   notification_preferences_database_addr: "cassandra:9042"
-  clients_node_addr: "0.0.0.0:6969"
+  clients_node_addr: "0.0.0.0:8088"
   api_router_addr: "0.0.0.0:6161"

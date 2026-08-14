@@ -32,7 +32,7 @@ async fn test_broker_addr() {
         brokers: "zxc:zxc".to_owned(),
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
@@ -50,7 +50,7 @@ pub async fn test_invalid_user_notifications_database_addr() {
         brokers: "localhost:9092".to_owned(),
         user_notifications_database_addr: "zxc:zxc".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
@@ -68,7 +68,7 @@ pub async fn test_invalid_notification_preferences_database_addr() {
         brokers: "localhost:9092".to_owned(),
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "zxc:zxc".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
@@ -103,7 +103,7 @@ pub async fn test_invalid_metrics_receiver_addr() {
         brokers: "localhost:9092".to_owned(),
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some("zxc:zxc".to_owned()),
     };
 
@@ -124,7 +124,7 @@ pub async fn test_valid_addresses() {
         brokers: "localhost:9092".to_owned(),
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 

@@ -24,7 +24,7 @@ async fn test_metrics_sender_reconnection() {
         brokers: "localhost:9092".to_owned(),
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
-        clients_node_addr: "127.0.0.1:6969".to_owned(),
+        clients_node_addr: "127.0.0.1:8088".to_owned(),
         metrics_receiver_addr: Some(receiver_addr.clone()),
     };
 
