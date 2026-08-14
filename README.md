@@ -190,20 +190,20 @@ cd Frontend/app_react && npm test -- --watchAll=false
 Built by [**fraumarzhuk**](https://github.com/fraumarzhuk), [**grysha11**](https://github.com/grysha11), and [**Db1zz**](https://github.com/Db1zz):
 
 **fraumarzhuk** — Frontend lead, with backend/auth contributions
-- Login/signup pages, `MainLayout`, navigation, the chat UI, the profile popup/edit forms, and the friends views (PRs #9, #10, #17, #23, #25, #27, #34, #36, #49, #55, #56).
-- The chat backend (#29), oauth2 integration (#17) and contributions to the Spring Security/auth layer.
-- Internationalization and the language switcher (#40).
+- Login/signup pages, `MainLayout`, navigation, the chat UI, the profile popup/edit forms, and the friends views (PRs [#9](https://github.com/Db1zz/Anteiku/pull/9), [#10](https://github.com/Db1zz/Anteiku/pull/10), [#17](https://github.com/Db1zz/Anteiku/pull/17), [#23](https://github.com/Db1zz/Anteiku/pull/23), [#25](https://github.com/Db1zz/Anteiku/pull/25), [#27](https://github.com/Db1zz/Anteiku/pull/27), [#34](https://github.com/Db1zz/Anteiku/pull/34), [#36](https://github.com/Db1zz/Anteiku/pull/36), [#49](https://github.com/Db1zz/Anteiku/pull/49), [#55](https://github.com/Db1zz/Anteiku/pull/55), [#56](https://github.com/Db1zz/Anteiku/pull/56)).
+- The chat backend ([#29](https://github.com/Db1zz/Anteiku/pull/29)), oauth2 integration ([#17](https://github.com/Db1zz/Anteiku/pull/17)) and contributions to the Spring Security/auth layer.
+- Internationalization and the language switcher ([#40](https://github.com/Db1zz/Anteiku/pull/40)).
 
 **grysha11** — Full-stack development + DevOps
-- Servers/channels/roles, frontend and backend (#42, #43, #45, #48, #51), the friends backend integration (#28), and the profile button/friends view frontend (#14, #16).
-- CI/CD (#41), the ELK observability stack (#35), the Makefile and second `docker-compose` file for the notification stack (#37), and nginx as reverse proxy + TLS termination (#54).
-- The backend Mockito test suite (#38) and the frontend Jest/Testing Library suite (#39), plus a later pass of tests and translations (#57).
+- Servers/channels/roles, frontend and backend ([#42](https://github.com/Db1zz/Anteiku/pull/42), [#43](https://github.com/Db1zz/Anteiku/pull/43), [#45](https://github.com/Db1zz/Anteiku/pull/45), [#48](https://github.com/Db1zz/Anteiku/pull/48), [#51](https://github.com/Db1zz/Anteiku/pull/51)), the friends backend integration ([#28](https://github.com/Db1zz/Anteiku/pull/28)), and the profile button/friends view frontend ([#14](https://github.com/Db1zz/Anteiku/pull/14), [#16](https://github.com/Db1zz/Anteiku/pull/16)).
+- CI/CD ([#41](https://github.com/Db1zz/Anteiku/pull/41)), the ELK observability stack ([#35](https://github.com/Db1zz/Anteiku/pull/35)), the Makefile and second `docker-compose` file for the notification stack ([#37](https://github.com/Db1zz/Anteiku/pull/37)), and nginx as reverse proxy + TLS termination ([#54](https://github.com/Db1zz/Anteiku/pull/54)).
+- The backend Mockito test suite ([#38](https://github.com/Db1zz/Anteiku/pull/38)) and the frontend Jest/Testing Library suite ([#39](https://github.com/Db1zz/Anteiku/pull/39)), plus a later pass of tests and translations ([#57](https://github.com/Db1zz/Anteiku/pull/57)).
 
 **Db1zz** — Backend/infra lead
 - Project scaffolding: the initial commit, initial backend structure, the `User` model, and the Postgres init scripts, before the team moved to a PR-based workflow.
-- Auth end-to-end: OpenAPI/Swagger plus registration endpoints (#8), the JWT tokenizer (#11), auth fixes (#20), and a later round of security upgrades (#26).
-- The voice pipeline: WebRTC calls and supporting DB tables (#33), the complete voice call system (#46), the server voice-channel participants view (#50), and the STOMP socket for presence/session management (#47).
-- The standalone Rust notification service under [`Tools/Notify`](Tools/Notify) (Kafka consumer, Cassandra writer, its own REST/WebSocket API), integrated with the backend (#44), plus live organization-member status updates (#52) and a voice-notification bug fix (#53).
+- Auth end-to-end: OpenAPI/Swagger plus registration endpoints ([#8](https://github.com/Db1zz/Anteiku/pull/8)), the JWT tokenizer ([#11](https://github.com/Db1zz/Anteiku/pull/11)), auth fixes ([#20](https://github.com/Db1zz/Anteiku/pull/20)), and a later round of security upgrades ([#26](https://github.com/Db1zz/Anteiku/pull/26)).
+- The voice pipeline: WebRTC calls and supporting DB tables ([#33](https://github.com/Db1zz/Anteiku/pull/33)), the complete voice call system ([#46](https://github.com/Db1zz/Anteiku/pull/46)), the server voice-channel participants view ([#50](https://github.com/Db1zz/Anteiku/pull/50)), and the STOMP socket for presence/session management ([#47](https://github.com/Db1zz/Anteiku/pull/47)).
+- The standalone Rust notification service under [`Tools/Notify`](https://github.com/Db1zz/Notify) (Kafka consumer, Cassandra writer, its own REST/WebSocket API), integrated with the backend ([#44](https://github.com/Db1zz/Anteiku/pull/44)), plus live organization-member status updates ([#52](https://github.com/Db1zz/Anteiku/pull/52)) and a voice-notification bug fix ([#53](https://github.com/Db1zz/Anteiku/pull/53)).
 
 ## Resources
 
