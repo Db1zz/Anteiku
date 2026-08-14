@@ -24,7 +24,7 @@ consumer:
   brokers: "localhost:9092"
   user_notifications_database_addr: "127.0.0.1:9042"
   notification_preferences_database_addr: "127.0.0.1:9042"
-  clients_node_addr: "127.0.0.1:6969"
+  clients_node_addr: "127.0.0.1:8088"
   metrics_receiver_addr: "127.0.0.1:6979"
 
 load_balancer:
@@ -93,7 +93,7 @@ cargo run -- load-balancer
 
 **9042** — Cassandra
 
-**6969** — client node communication
+**8088** — client node communication
 
 **6979** — metrics
 

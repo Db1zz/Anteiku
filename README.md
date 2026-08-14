@@ -1,92 +1,110 @@
-*This project has been created as part of the 42 curriculum by fraumarzhuk, grysha11, Db1zz.*
-
 # Anteiku
 
-## Description
+Anteiku is a real-time chat platform — servers, channels, DMs, friends, roles and permissions, voice calls, and push notifications, built from scratch as a team of three.
 
-Anteiku is a full-stack real-time communication platform inspired by Discord and Slack.
-It combines direct messaging, server-based channels, role and permission management,
-friend relations, notifications, and voice rooms.
+![Backend CI](https://github.com/Db1zz/Anteiku/actions/workflows/backend-cicd.yml/badge.svg)
+![Frontend CI](https://github.com/Db1zz/Anteiku/actions/workflows/frontend-cicd.yml/badge.svg)
 
-The goal of the project is to build a production-style social platform that demonstrates:
+- **Frontend:** React 19 + TypeScript, Tailwind CSS
+- **Backend:** Java 25, Spring Boot 4, an OpenAPI-generated REST API
+- **Real-time:** STOMP over WebSocket for chat/presence, raw WebSocket + WebRTC for voice
+- **Notifications:** a separate Rust service consuming Kafka and writing to Cassandra
+- **Data:** PostgreSQL
+- **Ops:** Docker Compose, nginx (TLS termination + reverse proxy), an optional ELK stack for logs
 
-- A modern web frontend and API-driven backend.
-- Real-time communication over WebSockets.
-- Secure authentication and authorization.
-- Team-based development with CI/CD and modular architecture.
+## Why this exists
 
-### Key Features
+We wanted to build something with the shape of a real product rather than a toy CRUD app: multiple independently-scalable pieces (a Java API, a Rust notification engine, a message broker, two different databases) that all have to agree with each other over the wire.
 
-- User registration/login with JWT-based sessions.
-- OAuth2 login (GitHub and Google).
-- Profile management (including avatar upload).
-- Friends system (requests, accept/remove, block/unblock).
-- DM channels and server channels.
-- Server management (create/join via invite, member management).
-- Roles and permission masks per server.
-- Real-time messaging and user status updates.
-- Voice room join/create flow with WebRTC signaling support.
-- Notification subsystem (Rust service + Kafka + Cassandra).
-- Internationalization (English, Russian, German).
-- OpenAPI-based API documentation and generated delegates.
+## Architecture
 
-## Instructions
+```mermaid
+flowchart LR
+    FE["React SPA"]
+    NGINX["nginx (TLS, :443)"]
+    BE["Spring Boot API<br/>REST + STOMP + WebRTC signaling"]
+    PG[("PostgreSQL")]
+    KAFKA[["Kafka (optional stack)"]]
+    NOTIFY["Rust notification service"]
+    CASS[("Cassandra")]
+    ELK["Logstash / Elasticsearch / Kibana (optional)"]
+
+    FE -- "HTTPS + WSS" --> NGINX
+    NGINX -- "/api, /ws" --> BE
+    NGINX -- "/socket (WebRTC signaling)" --> BE
+    NGINX -- "/notify, /notify/ws" --> NOTIFY
+    BE --> PG
+    BE -- "publishes events" --> KAFKA
+    KAFKA --> NOTIFY
+    NOTIFY --> CASS
+    BE -. "logs" .-> ELK
+```
+
+The core stack (`docker-compose.yaml`) is nginx, the frontend, the backend, and Postgres — that's enough to run the whole app. Kafka, Cassandra, and the notification service live in their own compose file under [`Tools/Notify`](Tools/Notify) and are opt-in (see [Running the notification pipeline](#running-the-notification-pipeline)). Voice call audio/video never touches the backend at all — once signaling exchanges SDP/ICE over a WebSocket, peers connect to each other directly (mesh WebRTC, one `RTCPeerConnection` per participant).
+
+## Features
+
+- **Auth** — email/password with JWT access tokens (HS256, httpOnly cookies) backed by a server-side, revocable refresh token, plus OAuth2 login via GitHub and Google.
+- **Profiles** — editable display name/status/about, avatar upload through Cloudinary.
+- **Friends** — requests, accept/remove, block/unblock, live online status.
+- **Servers & channels** — create/join via invite code, text and voice channels, per-server roles built on a permission bitmask (administrator, manage channels, manage roles, send messages, connect to voice).
+- **Chat** — real-time messaging over STOMP, paginated history, presence pushed over the same socket.
+- **Voice calls** — join/create voice rooms, mesh WebRTC with STUN-based connectivity.
+- **Notifications** — the backend publishes domain events to Kafka; the Rust service consumes them and pushes to clients over its own WebSocket. Currently wired end-to-end for DMs and voice-call invites — server/group-channel notifications are modeled but not emitted yet.
+- **Internationalization** — full English, Russian, and German translations with a language switcher.
+- **API docs** — an OpenAPI 3.1 spec (31 paths, 40 operations) with generated server interfaces, browsable via Swagger UI at runtime.
+- **Observability** — an optional ELK stack with index lifecycle policies and a prebuilt Kibana dashboard.
+
+## Running it
 
 ### Prerequisites
 
-- Docker Engine 24+ and Docker Compose v2.
-- GNU Make.
-- (Local frontend development) Node.js 20.x and npm 10+.
-- (Local backend development) JDK 25 and Maven Wrapper.
-- Optional tools: curl, git.
+- Docker Engine 24+ and Docker Compose v2
+- GNU Make
+- Node.js 20.x + npm 10+ (for local frontend dev)
+- JDK 25 (for local backend dev — the Maven Wrapper is bundled)
 
-### Environment Setup
-
-1. Copy environment template and fill values:
+### Setup
 
 ```bash
 cp .env.example .env
 ```
 
-2. Configure at least these variables in .env:
+Fill in `.env`:
 
-- Database: POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD
-- Auth/OAuth: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-- JWT: JWT_PRIVATE_KEY, JWT_PUBLIC_KEY
-- Media: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-- Optional observability: ELASTIC_PASSWORD, KIBANA_PASSWORD
-- Voice/RTC: REACT_APP_STUN_SERVER, REACT_APP_SIGNALING_SERVER
-- Notifications: NOTIFY_PROD_ADDR
+| Variable | Used for |
+|---|---|
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` | Postgres |
+| `JWT_SECRET`, `JWT_EXPIRATION` | Signing/expiry for access tokens |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | GitHub OAuth2 login |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth2 login |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Avatar/image uploads |
+| `REACT_APP_STUN_SERVER`, `REACT_APP_SIGNALING_SERVER` | WebRTC voice calls |
+| `NOTIFY_PROD_ADDR` | Notification service address |
+| `ELASTIC_PASSWORD`, `KIBANA_PASSWORD` | Optional ELK stack |
 
-### Run with Docker (recommended)
-
-1. Start app stack:
-
-```bash
-make up
-```
-
-2. Start app stack + ELK:
+### Run with Docker
 
 ```bash
-make up-elk
+make up          # frontend + backend + postgres + nginx
+make up-elk       # same, plus the ELK logging stack
+make down         # stop
+make down-elk     # stop, including ELK
 ```
 
-3. Stop stack:
+### Running the notification pipeline
+
+Kafka, Cassandra, and the Rust service are a separate opt-in stack:
 
 ```bash
-make down
+docker compose -f docker-compose.yaml -f Tools/Notify/docker-compose.make.yaml up
 ```
 
-4. Stop stack including ELK:
+See [`Tools/Notify/README.md`](Tools/Notify/README.md) for running it standalone.
 
-```bash
-make down-elk
-```
+### Local development
 
-### Local Development
-
-#### Backend
+**Backend**
 
 ```bash
 cd Backend
@@ -94,7 +112,7 @@ cd Backend
 ./mvnw spring-boot:run
 ```
 
-#### Frontend
+**Frontend**
 
 ```bash
 cd Frontend/app_react
@@ -103,124 +121,26 @@ npm test -- --watchAll=false
 npm start
 ```
 
-### Default Service Ports
+### Ports
 
-- Frontend: 3000
-- Backend API: 8080
-- Backend debug: 5005
-- PostgreSQL: 5432
-- Kafka: 9092
-- Cassandra: 9042
-- Elasticsearch: 9200
-- Kibana: 5601
-- Logstash input: 50000
+| Service | Port |
+|---|---|
+| Frontend | 3000 |
+| Backend API | 8080 |
+| Backend remote debug | 5005 |
+| PostgreSQL | 5432 |
+| nginx (TLS) | 443 |
 
-### API Documentation
+Optional notification stack: Kafka `9092`, Cassandra `9042`, notify REST `6161`, notify WebSocket `8088`.
+Optional ELK stack: Logstash input `50000`; Elasticsearch/Kibana are reachable through nginx on `9200`/`5601`.
 
-- OpenAPI spec is available at Backend/src/main/resources/static/openapi.yaml.
-- Swagger UI is exposed by Springdoc at runtime.
+## API & data model
 
-## Team Information
+- OpenAPI spec: [`Backend/src/main/resources/static/openapi.yaml`](Backend/src/main/resources/static/openapi.yaml), with generated server interfaces implemented by hand-written delegates.
+- Swagger UI is served at runtime via Springdoc.
+- Endpoint groups: auth, users, friends, organizations (servers), organization members, roles, channels, invites, chat, voice, notifications.
 
-The role assignment below is based on repository history analysis and should be adjusted if your team used different formal role names.
-
-### fraumarzhuk
-
-- Assigned role(s): Product Owner + Frontend Lead + Backend Developer
-- Responsibilities:
-  - User-facing UX flows and frontend architecture.
-  - Authentication screens and profile/friends UI.
-  - Integration of client contexts, hooks, and i18n behavior.
-  - Early backend structure and service groundwork.
-  - API and data-layer foundation.
-
-
-### grysha11
-
-- Assigned role(s): Full-stack Developer + DevOps Support
-- Responsibilities:
-  - Backend and frontend feature delivery.
-  - Docker/compose and ELK-related integration work.
-  - Cross-cutting implementation in chat/server modules.
-
-
-### Db1zz
-
-- Assigned role(s): Tech Lead (Backend/Infra) + Systems Developer
-- Responsibilities:
-  - Core backend implementation and service orchestration.
-  - Rust Notify subsystem (Kafka/Cassandra consumer stack).
-  - Voice and notification pipeline integration.
-
-## Project Management
-
-### Work Organization
-
-- The project was organized in parallel streams:
-  - Frontend stream (UI, hooks, state management, tests).
-  - Backend stream (API, security, domain services, persistence).
-  - Infrastructure stream (Docker, CI/CD, observability, notifications).
-- Integration was performed incrementally through branch-based merges and regular synchronization.
-
-### Management Tools
-
-- Git and GitHub for version control and review flow.
-- GitHub Actions for CI/CD:
-  - Frontend workflow (test + build)
-  - Backend workflow (maven verify + artifact upload)
-
-### Communication Channels
-
-- Repository evidence confirms asynchronous communication through GitHub commits/PR workflow.
-- If your team used Discord/Slack/42 intra chat for meetings and task planning, add that explicitly here for evaluation completeness.
-
-## Technical Stack
-
-### Frontend
-
-- React 19 + TypeScript
-- react-router-dom
-- i18next + react-i18next
-- STOMP client and socket integrations
-- Tailwind CSS + custom CSS
-- Jest + Testing Library
-
-### Backend
-
-- Java 25
-- Spring Boot 4
-- Spring Security + OAuth2 client
-- Spring Web + WebSocket/STOMP
-- Spring Data JPA + Hibernate
-- OpenAPI Generator + Springdoc/Swagger UI
-- JWT (jjwt)
-
-### Databases and Messaging
-
-- PostgreSQL (main relational data store)
-- Cassandra (notification-oriented data in Notify subsystem)
-- Kafka (event and notification pipeline)
-
-### Other Significant Technologies
-
-- Rust/Cargo for Notify microservice.
-- Cloudinary for image upload/storage.
-- ELK stack (Elasticsearch, Logstash, Kibana) for logging and observability.
-- Docker Compose for local orchestration.
-
-### Why These Choices
-
-- React + TypeScript: strong ecosystem and maintainable typed frontend code.
-- Spring Boot: fast delivery of secure API and real-time backend features.
-- PostgreSQL: reliable relational model matching user/server/message entities.
-- Kafka + Cassandra + Rust: scalable notification pipeline with low overhead.
-- Docker Compose: reproducible local environment for multi-service integration.
-
-## Database Schema
-
-The primary relational schema is initialized through Backend/docker-entrypoint-initdb.d/init.sql.
-
-### ER Diagram (High-level)
+The relational schema lives in [`Backend/docker-entrypoint-initdb.d/init.sql`](Backend/docker-entrypoint-initdb.d/init.sql):
 
 ```mermaid
 erDiagram
@@ -242,183 +162,58 @@ erDiagram
   ORGANIZATIONS ||--o{ ORGANIZATION_INVITES : generates
 ```
 
-### Main Tables and Key Fields
+Channels are `TEXT` or `VOICE`; DM channels are just channels with no organization attached. Permissions are a bitmask on `roles.permission_mask`, evaluated per-user as the OR of all their roles (an organization's owner always has full permissions).
 
-- users: id UUID, username, display_name, status, about, picture, role.
-- users_credentials: user_id FK, email, password.
-- user_sessions: session tokens and expiration metadata.
-- friends: requester_id/addressee_id, relation status.
-- organizations: id, name, owner_id.
-- roles: organization_id, name, permission_mask.
-- organization_members: organization_id, user_id.
-- organization_member_roles: member_id + role_id (join table).
-- channels: id, organization_id, type, name.
-- organization_channels: organization_id + channel_id (join table).
-- channel_members: channel_id + user_id.
-- chat_messages: channel_id, sender_id, content, created_at.
-- organization_invites: invite code, organization_id, creator_id, expires_at.
+## Testing
 
-## Features List
+**Backend** — Mockito-based unit tests over auth, sessions, OAuth2 provisioning, JWT handling, and each domain service (channels, chat, friends, organizations, roles, users). No controller-level or full integration tests yet.
 
-The list below summarizes implemented functionality and primary contributors inferred from commit history for related files.
+**Frontend** — Jest + Testing Library over the auth forms, the friends UI, the API client's refresh-token interceptor, and the WebRTC signaling session.
 
-1. Authentication and Session Management
-	- Functionality: register/login/refresh/logout with JWT sessions and cookie flow.
-	- Contributors: fraumarzhuk, Db1zz, grysha11.
-2. OAuth2 Login (GitHub/Google)
-	- Functionality: external provider login with Spring Security OAuth2.
-	- Contributors: fraumarzhuk, Db1zz.
-3. User Profile and Avatar Upload
-	- Functionality: editable profile fields and image upload via Cloudinary.
-	- Contributors: fraumarzhuk, Db1zz.
-4. Friends System
-	- Functionality: send/accept/remove requests, list friends, block/unblock users.
-	- Contributors: fraumarzhuk, grysha11, Db1zz.
-5. Direct Messaging and Channel Messaging
-	- Functionality: DM channel retrieval, paginated messages, real-time chat updates.
-	- Contributors: grysha11, Db1zz, fraumarzhuk.
-6. Servers (Organizations), Channels, Invites
-	- Functionality: create/join servers, manage channels, invite by code.
-	- Contributors: fraumarzhuk, grysha11, Db1zz.
-7. Roles and Permission System
-	- Functionality: role CRUD, permission masks, role assignment to members.
-	- Contributors: fraumarzhuk, grysha11, Db1zz.
-8. Voice Rooms
-	- Functionality: join/create voice rooms and WebRTC signaling transport.
-	- Contributors: Db1zz, grysha11, fraumarzhuk.
-9. Notification Subsystem
-	- Functionality: event emission in backend + Rust Notify service consuming Kafka.
-	- Contributors: Db1zz, grysha11, fraumarzhuk.
-10. Internationalization
-	- Functionality: multilingual UI resources (en, ru, de) and language switching.
-	- Contributors: fraumarzhuk, grysha11.
-11. CI/CD Pipelines
-	- Functionality: backend and frontend GitHub Actions test/build workflows.
-	- Contributors: grysha11 and team.
+```bash
+cd Backend && ./mvnw test
+cd Frontend/app_react && npm test -- --watchAll=false
+```
 
-## Modules
+## Tech stack
 
-Chosen modules are based on modules.MD and current implementation.
+**Frontend:** React 19, TypeScript, react-router-dom, i18next/react-i18next, `@stomp/stompjs`, Tailwind CSS, Jest + Testing Library.
 
-### Summary and Points
+**Backend:** Java 25, Spring Boot 4, Spring Security + OAuth2 client, Spring Web/WebSocket, Spring Data JPA + Hibernate, Spring Kafka, OpenAPI Generator + Springdoc, jjwt.
 
-1. Major: Framework for frontend and backend (2 pts)
-2. Major: Real-time features using WebSockets (2 pts)
-3. Major: Public API with database interaction and endpoint coverage (2 pts)
-4. Major: User interaction system (chat/profile/friends) (2 pts)
-5. Major: Public API module listed second time in modules.MD (2 pts)
-6. Minor: ORM for database (1 pt)
-7. Minor: File upload and management (1 pt)
-8. Minor: Multi-language support (1 pt)
-9. Major: Standard user management/authentication (2 pts)
-10. Minor: OAuth2 remote authentication (1 pt)
-11. Major: Advanced permissions system (2 pts)
+**Data & messaging:** PostgreSQL, Apache Kafka, Apache Cassandra.
 
-Total (as tracked in modules.MD): 18 points
+**Other:** Rust/Cargo (notification service), Cloudinary, the ELK stack, Docker Compose.
 
-### Implementation and Justification
+## Team
 
-1. Framework module
-	- Why: fast development with strong ecosystem and maintainability.
-	- How: React/TypeScript frontend and Spring Boot backend.
-	- Contributors: all core team members.
-2. Real-time module
-	- Why: chat/voice UX depends on low-latency updates.
-	- How: STOMP/WebSocket controllers, socket handlers, frontend hooks.
-	- Contributors: Db1zz, grysha11, fraumarzhuk.
-3. Public API module(s)
-	- Why: clean separation between frontend and backend; testability.
-	- How: OpenAPI schema, generated delegates, 30+ documented paths.
-	- Contributors: Db1zz, grysha11, fraumarzhuk.
-4. User interaction module
-	- Why: central to social/chat platform value.
-	- How: friends services, DM/server channels, profile APIs/UI.
-	- Contributors: fraumarzhuk, grysha11, Db1zz.
-5. ORM module
-	- Why: reduce boilerplate and improve persistence consistency.
-	- How: JPA repositories/entities with Hibernate.
-	- Contributors: Db1zz, grysha11.
-6. File upload module
-	- Why: profile personalization and identity in chat context.
-	- How: multipart endpoint + Cloudinary integration.
-	- Contributors: fraumarzhuk, Db1zz.
-7. i18n module
-	- Why: accessibility and broader usability.
-	- How: i18next resources and language selector.
-	- Contributors: fraumarzhuk, grysha11.
-8. Standard auth module
-	- Why: secure account lifecycle and protected routes.
-	- How: credentials + JWT + session repository + guards.
-	- Contributors: Db1zz, fraumarzhuk.
-9. OAuth2 module
-	- Why: better UX and trusted external identity providers.
-	- How: Spring OAuth2 client registration and frontend OAuth entry.
-	- Contributors: fraumarzhuk, Db1zz.
-10. Advanced permissions module
-	- Why: server moderation and role-based governance.
-	- How: permission masks, role assignment API, frontend permission hooks.
-	- Contributors: fraumarzhuk, grysha11, Db1zz.
+Built by [**fraumarzhuk**](https://github.com/fraumarzhuk), [**grysha11**](https://github.com/grysha11), and [**Db1zz**](https://github.com/Db1zz):
 
-## Individual Contributions
+**fraumarzhuk** — Frontend lead, with backend/auth contributions
+- Login/signup pages, `MainLayout`, navigation, the chat UI, the profile popup/edit forms, and the friends views (PRs [#9](https://github.com/Db1zz/Anteiku/pull/9), [#10](https://github.com/Db1zz/Anteiku/pull/10), [#17](https://github.com/Db1zz/Anteiku/pull/17), [#23](https://github.com/Db1zz/Anteiku/pull/23), [#25](https://github.com/Db1zz/Anteiku/pull/25), [#27](https://github.com/Db1zz/Anteiku/pull/27), [#34](https://github.com/Db1zz/Anteiku/pull/34), [#36](https://github.com/Db1zz/Anteiku/pull/36), [#49](https://github.com/Db1zz/Anteiku/pull/49), [#55](https://github.com/Db1zz/Anteiku/pull/55), [#56](https://github.com/Db1zz/Anteiku/pull/56)).
+- The chat backend ([#29](https://github.com/Db1zz/Anteiku/pull/29)), oauth2 integration ([#17](https://github.com/Db1zz/Anteiku/pull/17)) and contributions to the Spring Security/auth layer.
+- Internationalization and the language switcher ([#40](https://github.com/Db1zz/Anteiku/pull/40)).
 
-This section is intentionally explicit for evaluation transparency.
+**grysha11** — Full-stack development + DevOps
+- Servers/channels/roles, frontend and backend ([#42](https://github.com/Db1zz/Anteiku/pull/42), [#43](https://github.com/Db1zz/Anteiku/pull/43), [#45](https://github.com/Db1zz/Anteiku/pull/45), [#48](https://github.com/Db1zz/Anteiku/pull/48), [#51](https://github.com/Db1zz/Anteiku/pull/51)), the friends backend integration ([#28](https://github.com/Db1zz/Anteiku/pull/28)), and the profile button/friends view frontend ([#14](https://github.com/Db1zz/Anteiku/pull/14), [#16](https://github.com/Db1zz/Anteiku/pull/16)).
+- CI/CD ([#41](https://github.com/Db1zz/Anteiku/pull/41)), the ELK observability stack ([#35](https://github.com/Db1zz/Anteiku/pull/35)), the Makefile and second `docker-compose` file for the notification stack ([#37](https://github.com/Db1zz/Anteiku/pull/37)), and nginx as reverse proxy + TLS termination ([#54](https://github.com/Db1zz/Anteiku/pull/54)).
+- The backend Mockito test suite ([#38](https://github.com/Db1zz/Anteiku/pull/38)) and the frontend Jest/Testing Library suite ([#39](https://github.com/Db1zz/Anteiku/pull/39)), plus a later pass of tests and translations ([#57](https://github.com/Db1zz/Anteiku/pull/57)).
 
-### fraumarzhuk
-
-- Major frontend implementation across auth, profile, friends, and UI architecture.
-- Significant contribution to backend integration points and API usage wiring.
-- i18n resources and multilingual UX.
-- Challenge: synchronize rapidly evolving backend contracts with frontend state model.
-- Resolution: incremental adapter/hook updates and test coverage in frontend modules.
-
-### grysha11
-
-- Full-stack feature delivery across chat, server management, and infra files.
-- Contributions to compose/Makefile/ELK and CI workflow evolution.
-- Challenge: keeping real-time and standard request/response flows coherent.
-- Resolution: separation into dedicated hooks/services and iterative integration testing.
-
-### Db1zz
-
-- Heavy backend contribution (security, services, notification and voice subsystems).
-- Ownership of Rust Notify service and messaging stack integration.
-- Challenge: connecting multiple distributed components (Kafka, Cassandra, backend events).
-- Resolution: service isolation, explicit docker composition, and protocol-level contracts.
+**Db1zz** — Backend/infra lead
+- Project scaffolding: the initial commit, initial backend structure, the `User` model, and the Postgres init scripts, before the team moved to a PR-based workflow.
+- Auth end-to-end: OpenAPI/Swagger plus registration endpoints ([#8](https://github.com/Db1zz/Anteiku/pull/8)), the JWT tokenizer ([#11](https://github.com/Db1zz/Anteiku/pull/11)), auth fixes ([#20](https://github.com/Db1zz/Anteiku/pull/20)), and a later round of security upgrades ([#26](https://github.com/Db1zz/Anteiku/pull/26)).
+- The voice pipeline: WebRTC calls and supporting DB tables ([#33](https://github.com/Db1zz/Anteiku/pull/33)), the complete voice call system ([#46](https://github.com/Db1zz/Anteiku/pull/46)), the server voice-channel participants view ([#50](https://github.com/Db1zz/Anteiku/pull/50)), and the STOMP socket for presence/session management ([#47](https://github.com/Db1zz/Anteiku/pull/47)).
+- The standalone Rust notification service under [`Tools/Notify`](https://github.com/Db1zz/Notify) (Kafka consumer, Cassandra writer, its own REST/WebSocket API), integrated with the backend ([#44](https://github.com/Db1zz/Anteiku/pull/44)), plus live organization-member status updates ([#52](https://github.com/Db1zz/Anteiku/pull/52)) and a voice-notification bug fix ([#53](https://github.com/Db1zz/Anteiku/pull/53)).
 
 ## Resources
 
-### Classic References
-
-- Spring Boot Documentation: https://docs.spring.io/spring-boot/documentation.html
-- Spring Security OAuth2 Client: https://docs.spring.io/spring-security/reference/servlet/oauth2/
-- Spring WebSocket/STOMP: https://docs.spring.io/spring-framework/reference/web/websocket.html
-- React Documentation: https://react.dev/
-- TypeScript Handbook: https://www.typescriptlang.org/docs/
-- i18next Documentation: https://www.i18next.com/
-- OpenAPI Specification: https://spec.openapis.org/oas/latest.html
-- PostgreSQL Docs: https://www.postgresql.org/docs/
-- Apache Kafka Docs: https://kafka.apache.org/documentation/
-- Apache Cassandra Docs: https://cassandra.apache.org/doc/
-- Rust Book: https://doc.rust-lang.org/book/
-- Elastic Stack Docs: https://www.elastic.co/guide/index.html
-
-### AI Usage Disclosure
-
-AI tools were used as assistants, not as autonomous project owners.
-
-- Used for:
-  - Drafting/refining documentation and structure.
-  - Generating or polishing boilerplate snippets.
-  - Refactoring suggestions and debugging hints.
-  - Test idea generation and wording improvements.
-- Not used for:
-  - Blindly replacing architectural decisions.
-  - Automatic acceptance of unreviewed code.
-- Human validation:
-  - All final code and architecture decisions were reviewed and integrated by team members.
-
-## Known Limitations and Next Improvements
-
-- Some optional project management details (meeting cadence/external comm tools) are not fully traceable from repository artifacts and should be filled with your exact team workflow.
-- Hardening opportunities remain for production deployment (secret management, stricter security policies, scaling profiles).
-- Additional automated integration tests can be added for full end-to-end voice and notification scenarios.
+- [Spring Boot Documentation](https://docs.spring.io/spring-boot/documentation.html)
+- [Spring Security OAuth2 Client](https://docs.spring.io/spring-security/reference/servlet/oauth2/)
+- [Spring WebSocket/STOMP](https://docs.spring.io/spring-framework/reference/web/websocket.html)
+- [React Documentation](https://react.dev/)
+- [i18next Documentation](https://www.i18next.com/)
+- [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
+- [Apache Kafka Docs](https://kafka.apache.org/documentation/)
+- [Apache Cassandra Docs](https://cassandra.apache.org/doc/)
+- [Rust Book](https://doc.rust-lang.org/book/)
+- [Elastic Stack Docs](https://www.elastic.co/guide/index.html)

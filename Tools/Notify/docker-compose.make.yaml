@@ -53,7 +53,7 @@ services:
     image: rust:latest
     ports:
       - "6161:6161"
-      - "6969:6969"
+      - "8088:8088"
     volumes:
       - ./Tools/Notify/:/app
       - rust-cache:/usr/local/cargo/registry
